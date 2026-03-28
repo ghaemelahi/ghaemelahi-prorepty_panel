@@ -143,8 +143,11 @@
             </div>
             <div class="flex-grow-1 ms-3 info">
                 <a href="profile.html"
-                    class="d-block name">{{ auth()->user()->name ?? session()->get('agent_name') }}</a>
-                {{-- <a href="logout.html">خروج</a> --}}
+                    class="d-block name">{{ Auth::user()->name }}</a>
+                    <form action="{{ route('logout') }}" method="post">
+                        @csrf
+                        <button class="btn" type="submit">خروج</button>
+                    </form>
             </div>
         </div>
     </div>

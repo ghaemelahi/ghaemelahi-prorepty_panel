@@ -52,13 +52,15 @@
                                             </div>
                                             <div class="mb-3 text-start col-md-6">
                                                 <label for="request_reoperty_type" class="form-label">نوع ملک</label>
-                                                {{-- @dd($request_reoperty_type == 'earth') --}}
                                                 <select class="form-select form-control text-dark"
                                                     name="request_reoperty_type" aria-label="Default select example">
                                                     <option value="">انتخاب کنید... </option>
                                                     <option @selected($request_reoperty_type == 'tejari') value="tejari">تجاری</option>
                                                     <option @selected($request_reoperty_type == 'maskoni') value="maskoni">مسکونی</option>
-                                                    <option @selected($request_reoperty_type == 'earth') value="earth">زمین</option>
+                                                    <option @selected($request_reoperty_type == 'earth_maskoni') value="earth_maskoni">زمین مسکونی
+                                                    </option>
+                                                    <option @selected($request_reoperty_type == 'earth_tejari') value="earth_tejari">مین تجاری
+                                                    </option>
                                                 </select>
                                             </div>
                                             <div class="mb-3 text-start col-md-6">
@@ -91,6 +93,24 @@
                                                 <input type="text" value="{{ $request_address }}" class="form-control"
                                                     id="request_address" name="request_address">
                                             </div>
+                                            <div class="mb-3 text-start col-md-6">
+                                                <label class="form-label d-block mb-2">متراژ زمین</label>
+                                                <input type="text" value="{{ $request_meterage_building }}"
+                                                    class="form-control" id="request_meterage_building"
+                                                    name="request_meterage_building">
+                                            </div>
+                                            <div class="mb-3 text-start col-md-6">
+                                                <label class="form-label d-block mb-2">مدت ساخت</label>
+                                                <input type="text" value="{{ $request_year_manufacture }}"
+                                                    class="form-control" id="request_year_manufacture"
+                                                    name="request_year_manufacture">
+                                            </div>
+                                            <div class="mb-3 text-start col-md-6">
+                                                <label class="form-label d-block mb-2">نوع سند</label>
+                                                <input type="text" value="{{ $request_document_type }}"
+                                                    class="form-control" id="request_document_type"
+                                                    name="request_document_type">
+                                            </div>
                                         </div>
                                     </div>
                                     <div class="modal-footer">
@@ -121,8 +141,9 @@
                                                 خانوادگی</label>
                                         </div>
                                     </th>
-                                    <th scope="col">شماره تماس</th>
+                                    {{-- <th scope="col">شماره تماس</th> --}}
                                     <th scope="col">نوع درخواست</th>
+                                    <th scope="col">نوع ملک</th>
                                     <th scope="col">قیمت</th>
                                     <th scope="col">فروخته شده به</th>
                                     <th scope="col">تاریخ ثبت</th>
@@ -136,18 +157,19 @@
                                             <div class="d-flex align-items-center">
                                                 <div class="d-flex align-items-center">
                                                     <div class="flex-shrink-0 lh-1">
-                                                        <img src="{{ asset($item->images->path) }}"
+                                                        <img src="{{ asset($item->images->path ?? 'assets/images/sellers-1.jpg') }}"
                                                             class="wh-44 rounded-circle" alt="user">
                                                     </div>
                                                     <div class="flex-grow-1 ms-10">
                                                         <h4 class="fw-semibold fs-16 mb-0">{{ $item->seller_name }}</h4>
+                                                        <a href="tel:{{$item->seller_phone}}"><span class="text-gray-light">{{ $item->seller_phone }}</span></a>
                                                     </div>
                                                 </div>
                                             </div>
                                         </td>
-                                        <td>
+                                        {{-- <td>
                                             <a href="callto:{{ $item->seller_phone }}">{{ $item->seller_phone }}</a>
-                                        </td>
+                                        </td> --}}
                                         <td>
                                             <span>
                                                 @if ($item->request_type == 'sell')
@@ -157,6 +179,7 @@
                                                 @endif
                                             </span>
                                         </td>
+                                        <td>{{ $item->persian_reoperty_type }}</td>
                                         <td>
                                             <div class="d-flex gap-2 justify-content-center">
                                                 <span
@@ -186,6 +209,11 @@
                                                     data-bs-target="#buldingSellModal{{ $item->id }}">
                                                     فروش ملک
                                                 </button>
+                                                <a href="{{ route('seller_request_print_pdf', $item->id) }}"
+                                                    target="_blank"
+                                                    class="btn btn-danger py-2 px-3 text-white fw-semibold rounded-3">
+                                                    PDF
+                                                </a>
                                             </div>
                                         </td>
                                     </tr>
@@ -244,7 +272,11 @@
                                                             </option>
                                                             <option @selected($item->reoperty_type == 'maskoni') value="maskoni">مسکونی
                                                             </option>
-                                                            <option @selected($item->reoperty_type == 'earth') value="earth">زمین
+                                                            <option @selected($item->reoperty_type == 'earth_maskoni') value="earth_maskoni">زمین
+                                                                مسکونی
+                                                            </option>
+                                                            <option @selected($item->reoperty_type == 'earth_tejari') value="earth_tejari">زمین
+                                                                تجاری
                                                             </option>
                                                         </select>
                                                     </div>

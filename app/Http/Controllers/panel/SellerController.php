@@ -6,8 +6,10 @@ use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use LogService;
+use App\Http\Helpers\LogService;
 use Morilog\Jalali\Jalalian;
+
+use function App\Http\Helpers\english_number;
 
 class SellerController extends Controller
 {

@@ -65,7 +65,8 @@
                                                 <option value="">انتخاب کنید</option>
                                                 <option @selected($search_reoperty_type == 'tejari') value="tejari">تجاری</option>
                                                 <option @selected($search_reoperty_type == 'maskoni') value="maskoni">مسکونی</option>
-                                                <option @selected($search_reoperty_type == 'earth') value="earth">زمین</option>
+                                                <option @selected($search_reoperty_type == 'earth_maskoni') value="earth_maskoni">زمین مسکونی</option>
+                                                <option @selected($search_reoperty_type == 'earth_tejari') value="earth_tejari">زمین تجاری</option>
                                             </select>
                                         </div>
                                         <div class="form-group mb-4 col-md-6">
@@ -141,8 +142,10 @@
                                                     تجاری
                                                 @elseif($item->reoperty_type == 'maskoni')
                                                     مسکونی
-                                                @elseif($item->reoperty_type == 'earth')
-                                                    زمین
+                                                @elseif($item->reoperty_type == 'earth_maskoni')
+                                                    زمین مسکونی
+                                                    @elseif($item->reoperty_type == 'earth_tejari')
+                                                        زمین تجاری
                                                 @endif
                                             </span>
                                         </td>
@@ -432,8 +435,11 @@
                                                                     <option @selected($item->reoperty_type == 'maskoni') value="maskoni">
                                                                         مسکونی
                                                                     </option>
-                                                                    <option @selected($item->reoperty_type == 'earth') value="earth">
-                                                                        زمین
+                                                                    <option @selected($item->reoperty_type == 'earth_maskoni') value="earth_maskoni">
+                                                                        زمین مسکونی
+                                                                    </option>
+                                                                    <option @selected($item->reoperty_type == 'earth_tejari') value="earth_tejari">
+                                                                        زمین تجاری
                                                                     </option>
                                                                 </select>
                                                             </div>
@@ -536,7 +542,7 @@
                                                                 <textarea name="address" class="form-control text-dark" id="" cols="30" rows="5">{{ $item->address }}</textarea>
                                                             </div>
                                                             <div class="form-group mb-4">
-                                                                <label class="label">پیوست *</label>
+                                                                <label class="label">پیوست</label>
                                                                 <input type="file" accept="image/*" multiple
                                                                     maxlength="5" name="images[]"
                                                                     class="form-control text-dark" placeholder="5">
@@ -647,7 +653,8 @@
                         aria-label="Default select example">
                         <option value="tejari">تجاری</option>
                         <option value="maskoni">مسکونی</option>
-                        <option value="earth">زمین</option>
+                        <option value="earth_maskoni">زمین مسکونی</option>
+                        <option value="earth_tejari">زمین تجاری</option>
                     </select>
                 </div>
                 <div class="form-group mb-4">
@@ -720,8 +727,8 @@
                     <textarea name="address" class="form-control text-dark" id="" cols="30" rows="5"></textarea>
                 </div>
                 <div class="form-group mb-4">
-                    <label class="label">پیوست *</label>
-                    <input type="file" accept="image/*" multiple maxlength="5" name="images[]" required
+                    <label class="label">پیوست</label>
+                    <input type="file" accept="image/*" multiple maxlength="5" name="images[]"
                         class="form-control text-dark" placeholder="5">
                 </div>
                 <div class="form-group mb-4">

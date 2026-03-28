@@ -81,7 +81,7 @@
 
         </div>
     </div>
-
+    
     <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('assets/js/sidebar-menu.js') }}"></script>
     <script src="{{ asset('assets/js/dragdrop.js') }}"></script>
@@ -95,7 +95,9 @@
     <script src="{{ asset('assets/js/simplebar.min.js') }}"></script>
     <script src="{{ asset('assets/js/apexcharts.min.js') }}"></script>
     <script src="{{ asset('assets/js/amcharts.js') }}"></script>
+    @if(!request()->routeIs('dashbord'))
     <script src="{{ asset('assets/js/custom/ecommerce-chart.js') }}"></script>
+    @endif
     <script src="{{ asset('assets/js/custom/custom.js') }}"></script>
     <script src="{{ asset('assets/js/price.js') }}"></script>
     <link type="text/css" rel="stylesheet"

@@ -22,7 +22,7 @@ class CustomerRequestSellController extends Controller
         $validate = Validator::make($request->all(), [
             'seller_phone' => 'required|exists:sellers,phone',
             'seller_name' => 'required',
-            'reoperty_type' => 'required|in:tejari,maskoni,earth',
+            'reoperty_type' => 'required|in:tejari,maskoni,earth_maskoni,earth_tejari',
             'request_type' => 'required|in:sell,ejareh',
             'price' => 'required',
             'address' => 'required',

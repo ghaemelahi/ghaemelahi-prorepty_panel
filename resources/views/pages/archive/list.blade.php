@@ -115,8 +115,10 @@
                                                     تجاری
                                                 @elseif($item->reoperty_type == 'maskoni')
                                                     مسکونی
-                                                @elseif($item->reoperty_type == 'earth')
-                                                    زمین
+                                                @elseif($item->reoperty_type == 'earth_maskoni')
+                                                    زمین مسکونی
+                                                @elseif($item->reoperty_type == 'earth_tejari')
+                                                    زمین تجاری
                                                 @endif
                                             </span>
                                         </td>
@@ -224,8 +226,8 @@
                                                 <div class="modal-body text-start">
                                                     <!-- فرم توضیحات (نمونه، قابلیت افزودن اکشن و مقادیر بیشتر دارد) -->
 
-                                                    <div id="carouselExampleControlsNoTouching{{$item->id}}" class="carousel slide"
-                                                        data-bs-touch="false">
+                                                    <div id="carouselExampleControlsNoTouching{{ $item->id }}"
+                                                        class="carousel slide" data-bs-touch="false">
                                                         <div class="carousel-inner">
                                                             @foreach ($item->images as $image)
                                                                 {{-- @dd($item->images) --}}
@@ -237,14 +239,14 @@
                                                         </div>
                                                         @if (count($item->images) > 1)
                                                             <button class="carousel-control-prev" type="button"
-                                                                data-bs-target="#carouselExampleControlsNoTouching{{$item->id}}"
+                                                                data-bs-target="#carouselExampleControlsNoTouching{{ $item->id }}"
                                                                 data-bs-slide="prev">
                                                                 <span class="carousel-control-prev-icon"
                                                                     aria-hidden="true"></span>
                                                                 <span class="visually-hidden">قبلی</span>
                                                             </button>
                                                             <button class="carousel-control-next" type="button"
-                                                                data-bs-target="#carouselExampleControlsNoTouching{{$item->id}}"
+                                                                data-bs-target="#carouselExampleControlsNoTouching{{ $item->id }}"
                                                                 data-bs-slide="next">
                                                                 <span class="carousel-control-next-icon"
                                                                     aria-hidden="true"></span>
@@ -404,8 +406,13 @@
                                                                     <option @selected($item->reoperty_type == 'maskoni') value="maskoni">
                                                                         مسکونی
                                                                     </option>
-                                                                    <option @selected($item->reoperty_type == 'earth') value="earth">
-                                                                        زمین
+                                                                    <option @selected($item->reoperty_type == 'earth_maskoni')
+                                                                        value="earth_maskoni">
+                                                                        زمین مسکونی
+                                                                    </option>
+                                                                    <option @selected($item->reoperty_type == 'earth_tejari')
+                                                                        value="earth_tejari">
+                                                                        زمین تجاری
                                                                     </option>
                                                                 </select>
                                                             </div>
@@ -582,10 +589,10 @@
                     </tr>
                 @endif
             </div>
-            
-        <div class="mt-3">
-            {{ $data['archives']->links() }}
-        </div>
+
+            <div class="mt-3">
+                {{ $data['archives']->links() }}
+            </div>
         </div>
     </div>
 
@@ -620,7 +627,8 @@
                         aria-label="Default select example">
                         <option value="tejari">تجاری</option>
                         <option value="maskoni">مسکونی</option>
-                        <option value="earth">زمین</option>
+                        <option value="earth_maskoni">زمین مسکونی</option>
+                        <option value="earth_tejari">زمین تجاری</option>
                     </select>
                 </div>
                 <div class="form-group mb-4">

@@ -88,111 +88,87 @@
             margin-bottom: 1.6rem;
         }
 
-        /* استایل ساعت شنی */
-        .hourglass-wrap {
+        /* انیمیشن خطای ۵۰۰ — نماد خرابی سرور */
+        .error-animation-wrap {
             display: flex;
             align-items: center;
             justify-content: center;
             margin: 1.3rem 0 1.6rem;
         }
 
-        .hourglass {
-            --size: 180px;
-            width: calc(var(--size));
-            height: calc(var(--size) * 1.6);
+        .error-500-icon {
+            width: 140px;
+            height: 140px;
             position: relative;
+            display: flex;
+            align-items: center;
+            justify-content: center;
         }
 
-        .bulb {
+        /* دایرهٔ پشت با پالس (خطای سرور) */
+        .error-500-icon .ring {
             position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            width: 68%;
-            background: #fff;
-            border: 4px solid rgba(28, 109, 208, 0.08);
-            overflow: hidden;
+            inset: 0;
+            border-radius: 50%;
+            border: 5px solid rgba(220, 53, 69, 0.25);
+            animation: errorPulse 2s ease-in-out infinite;
         }
 
-        .bulb.top {
-            top: 0;
-            height: 48%;
-            border-bottom-left-radius: 60% 40%;
-            border-bottom-right-radius: 60% 40%;
-        }
-
-        .bulb.bottom {
-            bottom: 0;
-            height: 48%;
-            border-top-left-radius: 60% 40%;
-            border-top-right-radius: 60% 40%;
-        }
-
-        .sand-top {
+        .error-500-icon .ring::before {
+            content: '';
             position: absolute;
-            top: 0;
-            left: 0;
-            right: 0;
-            height: 60%;
-            background: linear-gradient(180deg, rgba(255, 122, 0, 0.95), rgba(255, 145, 56, 0.95));
-            animation: topDrain 4s linear infinite;
+            inset: -5px;
+            border-radius: 50%;
+            border: 3px solid transparent;
+            border-top-color: #dc3545;
+            border-right-color: #dc3545;
+            animation: ringSpin 3s linear infinite;
         }
 
-        .sand-bottom {
-            position: absolute;
-            bottom: 0;
-            left: 0;
-            right: 0;
-            height: 0%;
-            background: linear-gradient(180deg, rgba(255, 145, 56, 0.95), rgba(255, 122, 0, 0.95));
-            animation: bottomFill 4s linear infinite;
-        }
-
-        .sand-stream {
-            position: absolute;
-            left: 50%;
-            transform: translateX(-50%);
-            top: 45%;
-            width: 6px;
+        /* مثلث هشدار + علامت تعجب */
+        .error-500-icon .triangle {
+            position: relative;
+            width: 0;
             height: 0;
-            background: rgba(255, 122, 0, 0.95);
-            animation: streamDrop 1s linear infinite;
+            border-left: 42px solid transparent;
+            border-right: 42px solid transparent;
+            border-bottom: 72px solid #ff7a00;
+            filter: drop-shadow(0 4px 12px rgba(255, 122, 0, 0.35));
+            animation: iconWobble 2s ease-in-out infinite;
         }
 
-        @keyframes topDrain {
-            0% {
-                height: 60%
-            }
-
-            100% {
-                height: 8%
-            }
+        .error-500-icon .triangle::after {
+            content: '!';
+            position: absolute;
+            top: 28px;
+            left: 50%;
+            transform: translateX(-50%);
+            font-size: 36px;
+            font-weight: 800;
+            color: #fff;
+            font-family: 'Vazirmatn', Tahoma, sans-serif;
+            animation: exclamationBlink 1.5s ease-in-out infinite;
         }
 
-        @keyframes bottomFill {
-            0% {
-                height: 0%
-            }
-
-            100% {
-                height: 52%
-            }
+        @keyframes errorPulse {
+            0%, 100% { transform: scale(1); opacity: 0.6; }
+            50%      { transform: scale(1.05); opacity: 1; }
         }
 
-        @keyframes streamDrop {
-            0% {
-                height: 0;
-                opacity: 0
-            }
+        @keyframes ringSpin {
+            0%   { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
 
-            30% {
-                height: 40px;
-                opacity: 1
-            }
+        @keyframes iconWobble {
+            0%, 100% { transform: rotate(0deg) scale(1); }
+            25%      { transform: rotate(-3deg) scale(1.02); }
+            75%      { transform: rotate(3deg) scale(1.02); }
+        }
 
-            100% {
-                height: 0;
-                opacity: 0
-            }
+        @keyframes exclamationBlink {
+            0%, 100% { opacity: 1; }
+            50%      { opacity: 0.7; }
         }
 
         .small-note {
@@ -223,16 +199,11 @@
                 </div>
             </div>
 
-            <!-- ساعت شنی -->
-            <div class="hourglass-wrap">
-                <div class="hourglass">
-                    <div class="bulb top">
-                        <div class="sand-top"></div>
-                    </div>
-                    <div class="sand-stream"></div>
-                    <div class="bulb bottom">
-                        <div class="sand-bottom"></div>
-                    </div>
+            <!-- انیمیشن خطای ۵۰۰ -->
+            <div class="error-animation-wrap">
+                <div class="error-500-icon">
+                    <div class="ring"></div>
+                    <div class="triangle"></div>
                 </div>
             </div>
 

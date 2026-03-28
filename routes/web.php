@@ -67,6 +67,8 @@ Route::middleware(['auth','check_active'])->group(function () {
     // seller Requests System
     Route::prefix('seller_request')->group(function () {
         Route::get('/list_sells', [RequestSellerController::class, 'list_sells'])->name('list_sells_requests');
+        Route::get('/test_export_pdf/{request_id}', [RequestSellerController::class, 'testExportPdf'])->name('seller_request_test_export_pdf');
+        Route::get('/print_pdf/{request_id}', [RequestSellerController::class, 'printPdf'])->name('seller_request_print_pdf');
         Route::get('/{seller_id}', [RequestSellerController::class, 'index'])->name('seller_requests');
         Route::post('/store', [RequestSellerController::class, 'store'])->name('seller_request_store');
         Route::post('/update', [RequestSellerController::class, 'update'])->name('seller_request_update');
@@ -102,6 +104,9 @@ Route::middleware(['auth','check_active'])->group(function () {
     });
     // route auth
     Route::get('/', [IndexController::class, 'index'])->name('dashbord');
+});
+Route::fallback(function(){
+    return redirect()->route('dashbord');
 });
 
 require __DIR__.'/auth.php';

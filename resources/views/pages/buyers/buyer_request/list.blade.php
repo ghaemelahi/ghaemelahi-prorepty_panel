@@ -71,32 +71,40 @@
                                                 <option value="">انتخاب کنید</option>
                                                 <option @selected($search_reoperty_type == 'tejari') value="tejari">تجاری</option>
                                                 <option @selected($search_reoperty_type == 'maskoni') value="maskoni">مسکونی</option>
-                                                <option @selected($search_reoperty_type == 'earth') value="earth">زمین</option>
+                                                <option @selected($search_reoperty_type == 'earth_maskoni') value="earth_maskoni">زمین مسکونی
+                                                </option>
+                                                <option @selected($search_reoperty_type == 'earth_tejari') value="earth_tejari">زمین تجاری
+                                                </option>
                                             </select>
                                         </div>
                                         <div class="form-group mb-4 col-md-6">
                                             <label class="label">نوع درخواست</label>
                                             <div class="form-control">
                                                 <div class="form-check form-check-inline">
-                                                    <input class="form-check-input" type="radio" id="sell"
-                                                        name="search_request_type" @checked($search_request_type == 'sell') value="sell">
-                                                    <label class="form-check-label" for="sell">فروش</label>
+                                                    <input class="form-check-input" type="radio" id="buy"
+                                                        name="search_request_type" @checked($search_request_type == 'buy')
+                                                        value="buy">
+                                                    <label class="form-check-label" for="buy">خرید</label>
                                                 </div>
                                                 <div class="form-check form-check-inline">
                                                     <input class="form-check-input" type="radio" id="ejareh"
-                                                        name="search_request_type" @checked($search_request_type == 'ejareh') value="ejareh">
+                                                        name="search_request_type" @checked($search_request_type == 'ejareh')
+                                                        value="ejareh">
                                                     <label class="form-check-label" for="ejareh">اجاره</label>
                                                 </div>
                                             </div>
                                         </div>
                                         <div class="form-group mb-4 col-md-6">
                                             <label class="label">قیمت</label>
-                                            <input type="text" value="{{ $search_price!=0?number_format($search_price) : '' }}" name="search_price" class="form-control text-dark"
-                                                onkeyup="separate(this);" autocomplete="off">
+                                            <input type="text"
+                                                value="{{ $search_price != 0 ? number_format($search_price) : '' }}"
+                                                name="search_price" class="form-control text-dark" onkeyup="separate(this);"
+                                                autocomplete="off">
                                         </div>
                                         <div class="form-group mb-4 col-md-6">
                                             <label class="label">تعداد خواب</label>
-                                            <input type="number" value="{{ $search_bedrooms }}" name="search_bedrooms" autocomplete="off" class="form-control text-dark">
+                                            <input type="number" value="{{ $search_bedrooms }}" name="search_bedrooms"
+                                                autocomplete="off" class="form-control text-dark">
                                         </div>
                                     </div>
                                 </div>
@@ -134,7 +142,7 @@
                                         <td>
                                             <div class="flex-grow-1 ms-3">
                                                 <h4 class="fw-semibold fs-16 mb-0 lh-base hover">
-                                                    {{ $item->request_type == 'sell' ? 'فروش' : 'اجاره' }}
+                                                    {{ $item->request_type == 'buy' ? 'خرید' : 'اجاره' }}
                                                 </h4>
                                             </div>
                                         </td>
@@ -144,8 +152,10 @@
                                                     تجاری
                                                 @elseif($item->reoperty_type == 'maskoni')
                                                     مسکونی
-                                                @elseif($item->reoperty_type == 'earth')
-                                                    زمین
+                                                @elseif($item->reoperty_type == 'earth_maskoni')
+                                                    زمین مسکونی
+                                                @elseif($item->reoperty_type == 'earth_tejari')
+                                                    زمین تجاری
                                                 @endif
                                             </span>
                                         </td>
@@ -265,7 +275,9 @@
                                                                 </option>
                                                                 <option @selected($item->reoperty_type == 'maskoni') value="maskoni">مسکونی
                                                                 </option>
-                                                                <option @selected($item->reoperty_type == 'earth') value="earth">زمین
+                                                                <option @selected($item->reoperty_type == 'earth_maskoni') value="earth_maskoni">زمین مسکونی
+                                                                </option>
+                                                                <option @selected($item->reoperty_type == 'earth_tejari') value="earth_tejari">زمین تجاری
                                                                 </option>
                                                             </select>
                                                         </div>
@@ -274,11 +286,11 @@
                                                             <div class="form-control">
                                                                 <div class="form-check form-check-inline">
                                                                     <input class="form-check-input"
-                                                                        @checked($item->request_type == 'sell') type="radio"
-                                                                        id="sell" name="request_type"
-                                                                        value="sell">
+                                                                        @checked($item->request_type == 'buy') type="radio"
+                                                                        id="buy" name="request_type"
+                                                                        value="buy">
                                                                     <label class="form-check-label"
-                                                                        for="sell">فروش</label>
+                                                                        for="buy">خرید</label>
                                                                 </div>
                                                                 <div class="form-check form-check-inline">
                                                                     <input class="form-check-input"
@@ -407,16 +419,17 @@
                         aria-label="Default select example">
                         <option value="tejari">تجاری</option>
                         <option value="maskoni">مسکونی</option>
-                        <option value="earth">زمین</option>
+                        <option value="earth_maskoni">زمین مسکونی</option>
+                        <option value="earth_tejari">زمین تجاری</option>
                     </select>
                 </div>
                 <div class="form-group mb-4">
                     <label class="label">نوع درخواست *</label>
                     <div class="form-control">
                         <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" id="sell" name="request_type"
-                                value="sell">
-                            <label class="form-check-label" for="sell">فروش</label>
+                            <input class="form-check-input" type="radio" id="buy" name="request_type"
+                                value="buy">
+                            <label class="form-check-label" for="buy">خرید</label>
                         </div>
                         <div class="form-check form-check-inline">
                             <input class="form-check-input" type="radio" id="ejareh" name="request_type"

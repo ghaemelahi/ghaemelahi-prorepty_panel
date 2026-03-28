@@ -1,13 +1,17 @@
 <?php
+
 declare(strict_types=1);
+
 namespace App\Http\Controllers\panel;
 
 use App\Http\Controllers\Controller;
+use App\Http\Helpers\LogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use LogService;
 use Morilog\Jalali\Jalalian;
+
+use function App\Http\Helpers\english_number;
 
 class BuyerController extends Controller
 {
@@ -17,8 +21,8 @@ class BuyerController extends Controller
     {
         $this->logService = $logService;
     }
-    public function index(Request $request)  {
-
+    public function index(Request $request)
+    {
         $validate = validator::make($request->all(), [
             'search_name' => 'nullable|string|max:255',
             'search_phone' => 'nullable|string|max:11',
@@ -30,23 +34,23 @@ class BuyerController extends Controller
         $search_name  = $request->search_name;
         $search_phone  = $request->search_phone;
         $search_gender  = $request->search_gender;
-        $buyers = DB::table('buyers')->where('is_deleted',0);
-        if(!empty($search_name)){
-            $buyers = $buyers->where('name','like',"%$search_name%");
+        $buyers = DB::table('buyers')->where('is_deleted', 0);
+        if (!empty($search_name)) {
+            $buyers = $buyers->where('name', 'like', "%$search_name%");
+        }
+        if (!empty($search_phone)) {
+            $buyers = $buyers->where('phone', 'like', "%$search_phone%");
         }
 
-        if(!empty($search_phone)){
-            $buyers = $buyers->where('phone','like',"%$search_phone%");
-        }
-
-        if(!empty($search_gender)){
-            $buyers = $buyers->where('gender',"$search_gender");
+        if (!empty($search_gender)) {
+            $buyers = $buyers->where('gender', "$search_gender");
         }
         $buyers = $buyers->paginate(50);
-        return view("pages.buyers.list",compact('buyers','search_name','search_phone','search_gender'));
+        return view("pages.buyers.list", compact('buyers', 'search_name', 'search_phone', 'search_gender'));
     }
 
-    public function store(Request $request) {
+    public function store(Request $request)
+    {
 
         $validate = validator::make($request->all(), [
             'name' => 'required|string|max:255',
@@ -59,11 +63,11 @@ class BuyerController extends Controller
 
         $phone = english_number($request->phone);
         DB::table('buyers')->insert([
-            'name'=>$request->name,
-            'phone'=>$phone,
-            'gender'=>$request->gender,
-            'created_at'=>Jalalian::now()->format("Y-m-d H:i:s"),
-            'updated_at'=>Jalalian::now()->format("Y-m-d H:i:s"),
+            'name' => $request->name,
+            'phone' => $phone,
+            'gender' => $request->gender,
+            'created_at' => Jalalian::now()->format("Y-m-d H:i:s"),
+            'updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
         ]);
 
         // MARK:-> SAVE LOG USER SYSTEM
@@ -75,8 +79,9 @@ class BuyerController extends Controller
         return redirect()->route('buyers')->with('success_create_buyer', "خریدار $name با موفقیت ایجاد شد");
     }
 
-    public function update(Request $request){
-        
+    public function update(Request $request)
+    {
+
         $validate = validator::make($request->all(), [
             'buyer_id' => 'required|exists:buyers,id',
             'name' => 'required|string|max:255',
@@ -89,10 +94,10 @@ class BuyerController extends Controller
 
         $phone = english_number($request->phone);
         DB::table('buyers')->whereId($request->buyer_id)->update([
-            'name'=>$request->name,
-            'phone'=>$phone,
-            'gender'=>$request->gender,
-            'updated_at'=>Jalalian::now()->format("Y-m-d H:i:s"),
+            'name' => $request->name,
+            'phone' => $phone,
+            'gender' => $request->gender,
+            'updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
         ]);
 
         // MARK:-> SAVE LOG USER SYSTEM
@@ -104,8 +109,9 @@ class BuyerController extends Controller
         return redirect()->route('buyers')->with('success_update_buyer', "اطلاعات خریدار $name بروزرسانی گردید.");
     }
 
-    public function delete(Request $request) {
-        
+    public function delete(Request $request)
+    {
+
         $validate = validator::make($request->all(), [
             'buyer_id' => 'required|exists:buyers,id',
             'name' => 'required|string|max:255',
@@ -120,7 +126,7 @@ class BuyerController extends Controller
             'delete_at' => Jalalian::now()->format("Y-m-d H:i:s"),
         ]);
 
-        DB::table('buyer_requests')->where('buyer_id',$request->buyer_id)->update([
+        DB::table('buyer_requests')->where('buyer_id', $request->buyer_id)->update([
             'is_deleted' => 1,
             'updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
             'delete_at' => Jalalian::now()->format("Y-m-d H:i:s"),
@@ -136,14 +142,16 @@ class BuyerController extends Controller
     }
 
 
-    
-    public function delete_list(Request $request)  {
-        $data = DB::table('buyers')->where('is_deleted',1)->paginate(50)->appends($request->query());
-        return view("pages.buyers.delete_list",compact('data'));
+
+    public function delete_list(Request $request)
+    {
+        $data = DB::table('buyers')->where('is_deleted', 1)->paginate(50)->appends($request->query());
+        return view("pages.buyers.delete_list", compact('data'));
     }
 
-    public function undelete(Request $request) {
-        
+    public function undelete(Request $request)
+    {
+
         $validate = validator::make($request->all(), [
             'buyer_id' => 'required|exists:buyers,id',
             'name' => 'required|string|max:255',
@@ -158,7 +166,7 @@ class BuyerController extends Controller
             'delete_at' => null,
         ]);
 
-        DB::table('buyer_requests')->where('buyer_id',$request->buyer_id)->update([
+        DB::table('buyer_requests')->where('buyer_id', $request->buyer_id)->update([
             'is_deleted' => 0,
             'updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
             'delete_at' => null,
@@ -172,5 +180,4 @@ class BuyerController extends Controller
         // MARK:-> END SAVE LOG USER SYSTEM
         return redirect()->back()->with('success_undelete_buyer', "خریدار $request->name با موفقیت فعال گردید.");
     }
-
 }

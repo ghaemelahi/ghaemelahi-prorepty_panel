@@ -1,5 +1,6 @@
 <?php
-
+declare(strict_types=1);
+namespace App\Http\Helpers;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Morilog\Jalali\Jalalian;

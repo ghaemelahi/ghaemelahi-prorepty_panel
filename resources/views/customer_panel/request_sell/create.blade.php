@@ -38,7 +38,8 @@
                                     aria-label="Default select example">
                                     <option value="tejari">تجاری</option>
                                     <option value="maskoni">مسکونی</option>
-                                    <option value="earth">زمین</option>
+                                    <option value="earth_maskoni">زمین مسکونی</option>
+                                    <option value="earth_tejari">زمین تجاری</option>
                                 </select>
                             </div>
                             <div class="form-group col-md-6 mb-4">

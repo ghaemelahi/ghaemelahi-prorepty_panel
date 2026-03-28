@@ -34,6 +34,12 @@ class AppServiceProvider extends ServiceProvider
         // confing smsapi
         require_once app_path("Http/Helpers/config_sms.php");
 
+        // chart helpers
+        require_once app_path("Http/Helpers/tally.php");
+
+        // pagination settings   
         Paginator::useBootstrap();
+
+        
     }
 }

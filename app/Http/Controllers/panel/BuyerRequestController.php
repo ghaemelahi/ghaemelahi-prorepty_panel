@@ -6,10 +6,12 @@ namespace App\Http\Controllers\panel;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
+use App\Http\Helpers\LogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
-use LogService;
 use Morilog\Jalali\Jalalian;
+
+use function App\Http\Helpers\english_number;
 
 class BuyerRequestController extends Controller
 {
@@ -28,7 +30,7 @@ class BuyerRequestController extends Controller
         $validate = Validator::make($data, [
             'buyer_id' => 'required|exists:buyers,id',
             'search_reoperty_type' => 'nullable',
-            'search_request_type' => 'nullable|in:sell,ejareh',
+            'search_request_type' => 'nullable|in:buy,ejareh',
             'search_price' => 'nullable',
             'search_bedrooms' => 'nullable',
         ]);
@@ -118,8 +120,8 @@ class BuyerRequestController extends Controller
             'buyer_id' => 'required|exists:buyers,id',
             'buyer_phone' => 'required|exists:buyers,phone',
             'buyer_name' => 'required',
-            'reoperty_type' => 'required|in:tejari,maskoni,earth',
-            'request_type' => 'required|in:sell,ejareh',
+            'reoperty_type' => 'required|in:tejari,maskoni,earth_maskoni,earth_tejari',
+            'request_type' => 'required|in:buy,ejareh',
             'price' => 'required',
             'bedrooms' => 'required',
             'description' => 'nullable|string',
@@ -136,7 +138,7 @@ class BuyerRequestController extends Controller
             'reoperty_type' => $request->reoperty_type,
             'price' => str_replace(",", "", $request->price),
             'request_type' => $request->request_type,
-            'bedrooms' => $request->bedrooms,
+            'bedrooms' => english_number($request->bedrooms),
             'description' => $request->description ?? "_",
             'created_at' => Jalalian::now()->format("Y-m-d H:i:s"),
             'updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
@@ -158,9 +160,9 @@ class BuyerRequestController extends Controller
             'buyer_id' => 'required|exists:buyers,id',
             'buyer_phone' => 'required|exists:buyers,phone',
             'buyer_name' => 'required',
-            'reoperty_type' => 'required|in:tejari,maskoni,earth',
+            'reoperty_type' => 'required|in:tejari,maskoni,earth_maskoni,earth_tejari',
             'status' => 'required|in:doing,compelet',
-            'request_type' => 'required|in:sell,ejareh',
+            'request_type' => 'required|in:buy,ejareh',
             'price' => 'required',
             'bedrooms' => 'required',
             'description' => 'nullable|string',
@@ -177,7 +179,7 @@ class BuyerRequestController extends Controller
             'reoperty_type' => $request->reoperty_type,
             'price' => str_replace(",", "", $request->price),
             'request_type' => $request->request_type,
-            'bedrooms' => $request->bedrooms,
+            'bedrooms' => english_number($request->bedrooms),
             'status' => $request->status,
             'description' => $request->description ?? "_",
             'updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
@@ -247,14 +249,15 @@ class BuyerRequestController extends Controller
             ])
             ->where('buyer_requests.is_deleted', 1)->paginate(50)->through(function ($item) {
                 $item->request_type = match ($item->request_type) {
-                    'sell' => 'فروش',
+                    'buy' => 'خرید',
                     'ejareh' => 'اجاره',
                 };
 
                 $item->reoperty_type = match ($item->reoperty_type) {
                     'maskoni' => 'مسکونی',
                     'tejari' => 'تجاری',
-                    'earth' => 'زمین',
+                    'earth_maskoni' => 'زمین مسکونی',
+                    'earth_tejari' => 'زمین تجاری',
                 };
                 return $item;
             })->appends($request->query());

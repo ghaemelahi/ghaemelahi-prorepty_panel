@@ -1,8 +1,9 @@
 {{-- Strart Alert User Systems --}}
 @if ($errors->error_store_user_system->any())
-    <div class="alert alert-danger mt-3" role="alert">
+    <div class="alert alert-danger text-danger" role="alert">
         @foreach ($errors->error_store_user_system->all() as $error)
-            <li>{{ $error }}</li>
+            <i class="ri-service-line fs-18 me-1"></i>
+            {{ $error }}
         @endforeach
     </div>
 @endif
@@ -549,6 +550,15 @@
 @endif
 
 
+@if ($errors->error_not_found_request->any())
+    <div class="alert alert-danger mt-3" role="alert">
+        @foreach ($errors->error_not_found_request->all() as $error)
+            <li>{{ $error }}</li>
+        @endforeach
+    </div>
+@endif
+
+
 
 @if ($errors->error_create_seller_request->any())
     <div class="alert alert-danger mt-3" role="alert">
@@ -816,3 +826,12 @@
     </script>
 @endif
 {{-- End Alert reate new sell request buy cusmers with link Request --}}
+
+
+@if ($errors->any())
+    <div class="alert alert-danger mt-3" role="alert">
+        @foreach ($errors->all() as $error)
+            <li class="ml-3">{{ $error }}</li>
+        @endforeach
+    </div>
+@endif

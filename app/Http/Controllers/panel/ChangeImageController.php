@@ -4,10 +4,10 @@ namespace App\Http\Controllers\panel;
 
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
+use App\Http\Helpers\LogService;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use LogService;
 use Morilog\Jalali\Jalalian;
 
 class ChangeImageController extends Controller

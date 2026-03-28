@@ -5,12 +5,17 @@ declare(strict_types=1);
 namespace App\Http\Controllers\panel;
 
 use App\Http\Controllers\Controller;
+use App\Http\Helpers\LogService;
+use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Storage;
 use Illuminate\Support\Facades\Validator;
-use LogService;
 use Morilog\Jalali\Jalalian;
+
+use function App\Http\Helpers\english_number;
+
+// use Spatie\Browsershot\Browsershot;
 
 class RequestSellerController extends Controller
 {
@@ -48,21 +53,21 @@ class RequestSellerController extends Controller
             ->where('is_deleted', 0)
             ->where('seller_id', $seller_id);
 
-            if ($search_reoperty_type != null) {
-                $data['seller_requests'] = $data['seller_requests']->where('reoperty_type', $search_reoperty_type);
-            }
-            if ($search_request_type != null) {
-                $data['seller_requests'] = $data['seller_requests']->where('request_type', $search_request_type);
-            }
-            if ($search_price != null) {
-                $data['seller_requests'] = $data['seller_requests']->where('price', $search_price);
-            }
-            if ($search_bedrooms != null) {
-                $data['seller_requests'] = $data['seller_requests']->where('number_bedrooms', $search_bedrooms);
-            }
+        if ($search_reoperty_type != null) {
+            $data['seller_requests'] = $data['seller_requests']->where('reoperty_type', $search_reoperty_type);
+        }
+        if ($search_request_type != null) {
+            $data['seller_requests'] = $data['seller_requests']->where('request_type', $search_request_type);
+        }
+        if ($search_price != null) {
+            $data['seller_requests'] = $data['seller_requests']->where('price', $search_price);
+        }
+        if ($search_bedrooms != null) {
+            $data['seller_requests'] = $data['seller_requests']->where('number_bedrooms', $search_bedrooms);
+        }
 
-            $data['seller_requests'] = $data['seller_requests']->paginate(50)
-             ->through(function ($item) {
+        $data['seller_requests'] = $data['seller_requests']->paginate(50)
+            ->through(function ($item) {
 
                 $item->images = DB::table('images_requests_seller')
                     ->where('request_seller_id', $item->id)
@@ -70,16 +75,195 @@ class RequestSellerController extends Controller
                     ->get(['path', 'id']);
                 return $item;
             })->appends($request->query());
-            // dd($data['seller_requests']);
+        // dd($data['seller_requests']);
 
-        return view("pages.sellers.request_seller.list", compact('data','search_reoperty_type','search_request_type','search_price','search_bedrooms'));
+        return view("pages.sellers.request_seller.list", compact('data', 'search_reoperty_type', 'search_request_type', 'search_price', 'search_bedrooms'));
     }
 
+    /**
+     * خروجی PDF درخواست فروش (با spatie/laravel-pdf — فارسی و عکس درست)
+     */
+    /* public function testExportPdf($request_id)
+    {
+        $validate = Validator::make(['request_id' => $request_id], [
+            'request_id' => 'required|exists:request_sellers,id',
+        ]);
+        if ($validate->fails()) {
+            return redirect()->back()->withErrors($validate, 'error_not_found_request');
+        }
+
+        $item = DB::table('request_sellers')
+            ->join('sellers', 'request_sellers.seller_id', 'sellers.id')
+            ->select([
+                'request_sellers.*',
+                'sellers.name as seller_name',
+                'sellers.phone as seller_phone',
+            ])
+            ->where('request_sellers.is_deleted', 0)
+            ->where('request_sellers.id', $request_id)
+            ->first();
+
+        $imageRows = DB::table('images_requests_seller')
+            ->where('request_seller_id', $request_id)
+            ->where('is_deleted', 0)
+            ->orderBy('id')
+            ->limit(5)
+            ->get(['path', 'id']);
+
+        $images = $imageRows->map(function ($row) {
+            $path = public_path($row->path);
+            $obj = (object) ['id' => $row->id, 'path' => $row->path, 'data_uri' => null];
+            if (file_exists($path)) {
+                $mime = match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
+                    'jpg', 'jpeg' => 'jpeg',
+                    'png' => 'png',
+                    'gif' => 'gif',
+                    'webp' => 'webp',
+                    default => 'jpeg',
+                };
+                $obj->data_uri = 'data:image/' . $mime . ';base64,' . base64_encode(file_get_contents($path));
+            }
+            return $obj;
+        });
+
+        $date = Jalalian::now()->format('Y/m/d');
+
+        return Pdf::view('pages.sellers.request_seller.exportPDF', [
+            'item'  => $item,
+            'images' => $images,
+            'date'  => $date,
+        ])
+            ->format('a4')
+            ->name('request-' . $request_id . '.pdf')
+            ->download();
+    }*/
+    public function testExportPdf($request_id)
+    {
+        $validate = Validator::make(['request_id' => $request_id], [
+            'request_id' => 'required|exists:request_sellers,id',
+        ]);
+
+        if ($validate->fails()) {
+            return redirect()->back()->withErrors($validate, 'error_not_found_request');
+        }
+
+        $item = DB::table('request_sellers')
+            ->join('sellers', 'request_sellers.seller_id', '=', 'sellers.id')
+            ->select([
+                'request_sellers.*',
+                'sellers.name as seller_name',
+                'sellers.phone as seller_phone',
+            ])
+            ->where('request_sellers.is_deleted', 0)
+            ->where('request_sellers.id', $request_id)
+            ->first();
+
+        $imageRows = DB::table('images_requests_seller')
+            ->where('request_seller_id', $request_id)
+            ->where('is_deleted', 0)
+            ->orderBy('id')
+            ->limit(5)
+            ->get(['path', 'id']);
+
+        $images = $imageRows->map(function ($row) {
+            $path = public_path($row->path);
+
+            $obj = (object)[
+                'id' => $row->id,
+                'path' => $row->path,
+                'data_uri' => null
+            ];
+
+            if (file_exists($path)) {
+                $extension = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+
+                $mime = match ($extension) {
+                    'jpg', 'jpeg' => 'jpeg',
+                    'png' => 'png',
+                    'gif' => 'gif',
+                    'webp' => 'webp',
+                    default => 'jpeg',
+                };
+
+                $obj->data_uri = 'data:image/' . $mime . ';base64,' . base64_encode(file_get_contents($path));
+            }
+
+            return $obj;
+        });
+
+        $date = Jalalian::now()->format('Y/m/d');
+
+        $pdf = Pdf::loadView('pages.sellers.request_seller.exportPDF', [
+            'item'   => $item,
+            'images' => $images,
+            'date'   => $date,
+        ])
+            ->setPaper('a4', 'portrait'); // جایگزین format()
+
+        return $pdf->download('request-' . $request_id . '.pdf');
+    }
+
+    /**
+     * صفحهٔ چاپ/ذخیره PDF با JS خام (بدون کتابخانهٔ سرور — فارسی و عکس درست)
+     */
+    public function printPdf($request_id)
+    {
+        $validate = Validator::make(['request_id' => $request_id], [
+            'request_id' => 'required|exists:request_sellers,id',
+        ]);
+        if ($validate->fails()) {
+            return redirect()->back()->withErrors($validate, 'error_not_found_request');
+        }
+
+        $item = DB::table('request_sellers')
+            ->join('sellers', 'request_sellers.seller_id', '=', 'sellers.id')
+            ->select([
+                'request_sellers.*',
+                'sellers.name as seller_name',
+                'sellers.phone as seller_phone',
+            ])
+            ->where('request_sellers.is_deleted', 0)
+            ->where('request_sellers.id', $request_id)
+            ->first();
+
+        $imageRows = DB::table('images_requests_seller')
+            ->where('request_seller_id', $request_id)
+            ->where('is_deleted', 0)
+            ->orderBy('id')
+            ->limit(5)
+            ->get(['path', 'id']);
+
+        $images = $imageRows->map(function ($row) {
+            $path = public_path($row->path);
+            $obj = (object) ['id' => $row->id, 'path' => $row->path, 'data_uri' => null];
+            if (file_exists($path)) {
+                $ext = strtolower(pathinfo($path, PATHINFO_EXTENSION));
+                $mime = match ($ext) {
+                    'jpg', 'jpeg' => 'jpeg',
+                    'png' => 'png',
+                    'gif' => 'gif',
+                    'webp' => 'webp',
+                    default => 'jpeg',
+                };
+                $obj->data_uri = 'data:image/' . $mime . ';base64,' . base64_encode(file_get_contents($path));
+            }
+            return $obj;
+        });
+
+        $date = Jalalian::now()->format('Y/m/d');
+
+        return view('pages.sellers.request_seller.printPDF', [
+            'item'     => $item,
+            'images'   => $images,
+            'date'     => $date,
+            'logo_url' => null, // برای نمایش لوگو: asset('path/to/logo.png')
+        ]);
+    }
 
     public function list_sells(Request $request)
     {
         $validate = Validator::make($request->all(), [
-            'request_reoperty_type' => 'nullable|in:tejari,maskoni,earth',
+            'request_reoperty_type' => 'nullable|in:tejari,maskoni,earth_maskoni,earth_tejari',
             'search_request_type' => 'nullable|in:sell,ejareh',
             'request_price' => 'nullable|string',
             'request_address' => 'nullable|string',
@@ -93,7 +277,7 @@ class RequestSellerController extends Controller
         // dd($request->all());
         $data['list_seller_requests'] = DB::table('request_sellers')
             ->join('sellers', 'request_sellers.seller_id', 'sellers.id')
-            ->leftJoin('building_buyers','request_sellers.id','building_buyers.request_seller_id')
+            ->leftJoin('building_buyers', 'request_sellers.id', 'building_buyers.request_seller_id')
             ->select([
                 'request_sellers.*',
                 'sellers.name as seller_name',
@@ -101,7 +285,7 @@ class RequestSellerController extends Controller
                 'building_buyers.buyer_name'
             ])
             ->where('request_sellers.is_deleted', 0);
-            // ->where('building_buyers.buyer_name',null);
+        // ->where('building_buyers.buyer_name',null);
         if ($request->request_reoperty_type) {
             // dd($request->request_reoperty_type == 'earth');
             $data['list_seller_requests'] = $data['list_seller_requests']->where('reoperty_type', $request->request_reoperty_type);
@@ -115,6 +299,15 @@ class RequestSellerController extends Controller
         if ($request->request_address) {
             $data['list_seller_requests'] = $data['list_seller_requests']->where('address', 'LIKE', "%$request->request_address%");
         }
+        if ($request->request_meterage_building) {
+            $data['list_seller_requests'] = $data['list_seller_requests']->where('meterage_building', $request->request_meterage_building);
+        }
+        if ($request->request_year_manufacture) {
+            $data['list_seller_requests'] = $data['list_seller_requests']->where('year_manufacture', $request->request_year_manufacture);
+        }
+        if ($request->request_document_type) {
+            $data['list_seller_requests'] = $data['list_seller_requests']->where('document_type', $request->request_document_type);
+        }
         if ($request->search_info_seller) {
             $data['list_seller_requests'] = $data['list_seller_requests']->where(function ($query) use ($request) {
                 $query->where('sellers.name', 'like', "%{$request->search_info_seller}%")
@@ -123,6 +316,12 @@ class RequestSellerController extends Controller
         }
         $data['list_seller_requests'] = $data['list_seller_requests']->paginate(50)
             ->through(function ($item) {
+                $item->persian_reoperty_type = match($item->reoperty_type){
+                    'tejari'=>'تجاری',
+                    'maskoni'=>'مسکونی',
+                    'earth_maskoni'=>'زمین مسکونی',
+                    'earth_tejari'=>'زمین تجاری',
+                };
 
                 $item->images = DB::table('images_requests_seller')
                     ->where('request_seller_id', $item->id)
@@ -133,7 +332,7 @@ class RequestSellerController extends Controller
         // $data['seller_info'] = DB::table('sellers')->whereId($seller_id)->first();
 
         // dd($data['list_seller_requests']);
-        $data['buyers'] = DB::table('buyers')->where('is_deleted',0)->get(['id','name','phone']);
+        $data['buyers'] = DB::table('buyers')->where('is_deleted', 0)->get(['id', 'name', 'phone']);
         return view("pages.sellers.request_seller.list_sells", [
             'data' => $data,
             'request_reoperty_type' => $request->request_reoperty_type,
@@ -141,6 +340,9 @@ class RequestSellerController extends Controller
             'request_price' => $request->request_price,
             'request_address' => $request->request_address,
             'search_info_seller' => $request->search_info_seller,
+            'request_meterage_building' => $request->request_meterage_building,
+            'request_year_manufacture' => $request->request_year_manufacture,
+            'request_document_type' => $request->request_document_type,
         ]);
     }
 
@@ -150,7 +352,7 @@ class RequestSellerController extends Controller
             'seller_id' => 'required|exists:sellers,id',
             'seller_phone' => 'required|exists:sellers,phone',
             'seller_name' => 'required',
-            'reoperty_type' => 'required|in:tejari,maskoni,earth',
+            'reoperty_type' => 'required|in:tejari,maskoni,earth_maskoni,earth_tejari',
             'request_type' => 'required|in:sell,ejareh',
             'price' => 'required',
             'address' => 'required',
@@ -165,7 +367,7 @@ class RequestSellerController extends Controller
             'gas' => 'nullable',
             'telephone' => 'nullable',
             'description' => 'nullable',
-            'images' => 'required|array|max:5',
+            'images' => 'nullable|array|max:5',
         ]);
 
         if ($validate->fails()) {
@@ -187,11 +389,11 @@ class RequestSellerController extends Controller
             'reoperty_type' => $request->reoperty_type,
             'price' => str_replace(",", "", $request->price),
             'request_type' => $request->request_type,
-            'number_bedrooms' => $request->number_bedrooms,
-            'year_manufacture' => $request->year_manufacture,
-            'meterage_building' => $request->meterage_building,
-            'dimensions_building' => $request->dimensions_building,
-            'document_type' => $request->document_type,
+            'number_bedrooms' => english_number($request->number_bedrooms),
+            'year_manufacture' => english_number($request->year_manufacture),
+            'meterage_building' => english_number($request->meterage_building),
+            'dimensions_building' => english_number($request->dimensions_building),
+            'document_type' => english_number($request->document_type),
             'options' => $request->options,
             'water' => $request->water,
             'electric' => $request->electric,
@@ -204,19 +406,21 @@ class RequestSellerController extends Controller
             'updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
         ]);
 
-        foreach ($request->images as $image) {
-            // if(is_file($image)){
-            $path = "images/sellers/documents/$request_seller_id";
-            $file = $image;
-            $name = $file->getClientOriginalName();
-            Storage::putFileAs($path, $file, $name);
-            DB::table('images_requests_seller')->insert([
-                'request_seller_id' => $request_seller_id,
-                'path' => "$path/$name",
-                'created_at' => Jalalian::now()->format("Y-m-d H:i:s"),
-                'updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
-            ]);
-            // }
+        if ($request->images) {
+            foreach ($request->images as $image) {
+                // if(is_file($image)){
+                $path = "images/sellers/documents/$request_seller_id";
+                $file = $image;
+                $name = $file->getClientOriginalName();
+                Storage::putFileAs($path, $file, $name);
+                DB::table('images_requests_seller')->insert([
+                    'request_seller_id' => $request_seller_id,
+                    'path' => "$path/$name",
+                    'created_at' => Jalalian::now()->format("Y-m-d H:i:s"),
+                    'updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
+                ]);
+                // }
+            }
         }
 
         // MARK:-> SAVE LOG USER SYSTEM
@@ -234,10 +438,10 @@ class RequestSellerController extends Controller
             'seller_id' => 'required|exists:sellers,id',
             'seller_phone' => 'required|exists:sellers,phone',
             'seller_name' => 'required',
-            'reoperty_type' => 'required|in:tejari,maskoni,earth',
+            'reoperty_type' => 'required|in:tejari,maskoni,earth_maskoni,earth_tejari',
             'request_type' => 'required|in:sell,ejareh',
             'price' => 'required',
-            'address' => 'required|alpha_num',
+            'address' => 'required',
             'year_manufacture' => 'required',
             'meterage_building' => 'required',
             'dimensions_building' => 'required',
@@ -269,11 +473,11 @@ class RequestSellerController extends Controller
             'reoperty_type' => $request->reoperty_type,
             'price' => str_replace(",", "", $request->price),
             'request_type' => $request->request_type,
-            'number_bedrooms' => $request->number_bedrooms,
-            'year_manufacture' => $request->year_manufacture,
-            'meterage_building' => $request->meterage_building,
-            'dimensions_building' => $request->dimensions_building,
-            'document_type' => $request->document_type,
+            'number_bedrooms' => english_number($request->number_bedrooms),
+            'year_manufacture' => english_number($request->year_manufacture),
+            'meterage_building' => english_number($request->meterage_building),
+            'dimensions_building' => english_number($request->dimensions_building),
+            'document_type' => english_number($request->document_type),
             'options' => $request->options,
             'water' => $request->water,
             'electric' => $request->electric,
@@ -345,10 +549,10 @@ class RequestSellerController extends Controller
 
 
 
-    
+
     public function delete_list(Request $request)
     {
-       /* $validate = Validator::make(['buyer_id' => $buyer_id], [
+        /* $validate = Validator::make(['buyer_id' => $buyer_id], [
             'buyer_id' => 'required|exists:buyers,id'
         ]);
         if ($validate->fails()) {
@@ -356,29 +560,30 @@ class RequestSellerController extends Controller
         }*/
 
         $data = DB::table('request_sellers')
-        ->join('sellers','request_sellers.seller_id','sellers.id')
-        ->select([
-            'request_sellers.id',
-            'request_sellers.request_type',
-            'request_sellers.reoperty_type',
-            'request_sellers.delete_at',
-            'sellers.id as seller_id',
-            'sellers.name',
-            'sellers.phone',
-        ])
-        ->where('request_sellers.is_deleted',1)->paginate(50)->through(function($item) {
-            $item->request_type = match($item->request_type){
-                'sell'=>'فروش',
-                'ejareh'=>'اجاره',
-            };
+            ->join('sellers', 'request_sellers.seller_id', 'sellers.id')
+            ->select([
+                'request_sellers.id',
+                'request_sellers.request_type',
+                'request_sellers.reoperty_type',
+                'request_sellers.delete_at',
+                'sellers.id as seller_id',
+                'sellers.name',
+                'sellers.phone',
+            ])
+            ->where('request_sellers.is_deleted', 1)->paginate(50)->through(function ($item) {
+                $item->request_type = match ($item->request_type) {
+                    'sell' => 'فروش',
+                    'ejareh' => 'اجاره',
+                };
 
-            $item->reoperty_type = match($item->reoperty_type){
-                'maskoni'=>'مسکونی',
-                'tejari'=>'تجاری',
-                'earth'=>'زمین',
-            };
-            return $item;
-        })->appends($request->query());
+                $item->reoperty_type = match ($item->reoperty_type) {
+                    'maskoni' => 'مسکونی',
+                    'tejari' => 'تجاری',
+                    'earth_maskoni' => 'زمین مسکونی',
+                    'earth_tejari' => 'زمین تجاری',
+                };
+                return $item;
+            })->appends($request->query());
 
         return view("pages.sellers.request_seller.delete_list", compact('data'));
     }

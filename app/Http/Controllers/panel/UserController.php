@@ -9,7 +9,7 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
-use LogService;
+use App\Http\Helpers\LogService;
 use Morilog\Jalali\Jalalian;
 use Spatie\Permission\Models\Role;
 

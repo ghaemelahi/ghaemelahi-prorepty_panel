@@ -3,10 +3,10 @@ declare(strict_types= 1);
 namespace App\Http\Controllers\panel;
 
 use App\Http\Controllers\Controller;
+use App\Http\Helpers\LogService;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
-use LogService;
 use Morilog\Jalali\Jalalian;
 
 class BuildingBuyerController extends Controller

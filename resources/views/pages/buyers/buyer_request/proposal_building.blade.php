@@ -66,7 +66,8 @@
                                             <option value="">انتخاب کنید... </option>
                                             <option @selected($request_reoperty_type == 'tejari') value="tejari">تجاری</option>
                                             <option @selected($request_reoperty_type == 'maskoni') value="maskoni">مسکونی</option>
-                                            <option @selected($request_reoperty_type == 'earth') value="earth">زمین</option>
+                                                    <option @selected($request_reoperty_type == 'earth_maskoni') value="earth_maskoni">زمین مسکونی</option>
+                                                    <option @selected($request_reoperty_type == 'earth_tejari') value="earth_tejari">مین تجاری</option>
                                         </select>
                                     </div>
                                     <div class="mb-3 text-start col-md-6">
@@ -242,7 +243,11 @@
                                                             </option>
                                                             <option @selected($item->reoperty_type == 'maskoni') value="maskoni">مسکونی
                                                             </option>
-                                                            <option @selected($item->reoperty_type == 'earth') value="earth">زمین
+                                                            <option @selected($item->reoperty_type == 'earth_maskoni') value="earth_maskoni">زمین
+                                                                مسکونی
+                                                            </option>
+                                                            <option @selected($item->reoperty_type == 'earth_tejari') value="earth_tejari">زمین
+                                                                تجاری
                                                             </option>
                                                         </select>
                                                     </div>
