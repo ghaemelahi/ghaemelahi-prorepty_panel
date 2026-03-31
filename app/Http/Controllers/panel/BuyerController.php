@@ -62,7 +62,7 @@ class BuyerController extends Controller
         }
 
         $phone = english_number($request->phone);
-        DB::table('buyers')->insert([
+      $buyer_id = DB::table('buyers')->insertGetId([
             'name' => $request->name,
             'phone' => $phone,
             'gender' => $request->gender,
@@ -76,7 +76,7 @@ class BuyerController extends Controller
         $description = "خریدار $name به سیستم اضافه گردید.";
         $this->logService->saveLog($report, $description);
         // MARK:-> END SAVE LOG USER SYSTEM
-        return redirect()->route('buyers')->with('success_create_buyer', "خریدار $name با موفقیت ایجاد شد");
+        return redirect()->route('buyer_requests',$buyer_id)->with('success_create_buyer', "خریدار $name با موفقیت ایجاد شد");
     }
 
     public function update(Request $request)

@@ -1,9 +1,9 @@
 @extends('layouts.app')
-@section('title', 'فروش ملک')
+@section('title', 'خرید ملک')
 @section('content')
 
     <div class="d-sm-flex text-center justify-content-between align-items-center mb-4">
-        <h3 class="mb-sm-0 mb-1 fs-18">شبکه فروش ملک</h3>
+        <h3 class="mb-sm-0 mb-1 fs-18">شبکه خرید ملک</h3>
         <ul class="ps-0 mb-0 list-unstyled d-flex justify-content-center">
             <li>
                 <a href="index.html" class="text-decoration-none">
@@ -12,7 +12,7 @@
                 </a>
             </li>
             <li>
-                <span class="fw-semibold fs-14 heading-font text-dark dot ms-2">شبکه فروش ملک</span>
+                <span class="fw-semibold fs-14 heading-font text-dark dot ms-2">شبکه خرید ملک</span>
             </li>
         </ul>
     </div>
@@ -46,20 +46,20 @@
                                     <div class="modal-body">
                                         <div class="row">
                                             <div class="mb-3 text-start col-md-6">
-                                                <label class="form-label d-block mb-2">نام/شماره تماس فروشنده</label>
-                                                <input type="text" value="{{ $search_info_seller }}" class="form-control"
-                                                    id="search_info_seller" name="search_info_seller">
+                                                <label class="form-label d-block mb-2">نام/شماره تماس خریدار</label>
+                                                <input type="text" value="{{ $search_info_buyer }}" class="form-control"
+                                                    id="search_info_buyer" name="search_info_buyer">
                                             </div>
                                             <div class="mb-3 text-start col-md-6">
-                                                <label for="request_reoperty_type" class="form-label">نوع ملک</label>
+                                                <label for="search_reoperty_type" class="form-label">نوع ملک</label>
                                                 <select class="form-select form-control text-dark"
-                                                    name="request_reoperty_type" aria-label="Default select example">
+                                                    name="search_reoperty_type" aria-label="Default select example">
                                                     <option value="">انتخاب کنید... </option>
-                                                    <option @selected($request_reoperty_type == 'tejari') value="tejari">تجاری</option>
-                                                    <option @selected($request_reoperty_type == 'maskoni') value="maskoni">مسکونی</option>
-                                                    <option @selected($request_reoperty_type == 'earth_maskoni') value="earth_maskoni">زمین مسکونی
+                                                    <option @selected($search_reoperty_type == 'tejari') value="tejari">تجاری</option>
+                                                    <option @selected($search_reoperty_type == 'maskoni') value="maskoni">مسکونی</option>
+                                                    <option @selected($search_reoperty_type == 'earth_maskoni') value="earth_maskoni">زمین مسکونی
                                                     </option>
-                                                    <option @selected($request_reoperty_type == 'earth_tejari') value="earth_tejari">مین تجاری
+                                                    <option @selected($search_reoperty_type == 'earth_tejari') value="earth_tejari">مین تجاری
                                                     </option>
                                                 </select>
                                             </div>
@@ -69,9 +69,9 @@
                                                 <div class="form-control">
                                                     <div class="form-check form-check-inline">
                                                         <input class="form-check-input" type="radio"
-                                                            @checked($search_request_type == 'sell') id="sell"
-                                                            name="search_request_type" value="sell">
-                                                        <label class="form-check-label" for="sell">فروش</label>
+                                                            @checked($search_request_type == 'buy') id="buy"
+                                                            name="search_request_type" value="buy">
+                                                        <label class="form-check-label" for="buy">خرید</label>
                                                     </div>
                                                     <div class="form-check form-check-inline">
                                                         <input class="form-check-input" type="radio" id="ejareh"
@@ -84,37 +84,14 @@
                                             <div class="mb-3 text-start col-md-6">
                                                 <label class="form-label d-block mb-2">قیمت</label>
                                                 <input type="text"
-                                                    value="{{ $request_price != null ? number_format($request_price) : '' }}"
-                                                    onkeyup="separate(this);" class="form-control" id="request_price"
-                                                    name="request_price">
-                                            </div>
-                                            <div class="mb-3 text-start col-md-6">
-                                                <label class="form-label d-block mb-2">آدرس</label>
-                                                <input type="text" value="{{ $request_address }}" class="form-control"
-                                                    id="request_address" name="request_address">
-                                            </div>
-                                            <div class="mb-3 text-start col-md-6">
-                                                <label class="form-label d-block mb-2">متراژ زمین</label>
-                                                <input type="text" value="{{ $request_meterage_building }}"
-                                                    class="form-control" id="request_meterage_building"
-                                                    name="request_meterage_building">
-                                            </div>
-                                            <div class="mb-3 text-start col-md-6">
-                                                <label class="form-label d-block mb-2">مدت ساخت</label>
-                                                <input type="text" value="{{ $request_year_manufacture }}"
-                                                    class="form-control" id="request_year_manufacture"
-                                                    name="request_year_manufacture">
-                                            </div>
-                                            <div class="mb-3 text-start col-md-6">
-                                                <label class="form-label d-block mb-2">نوع سند</label>
-                                                <input type="text" value="{{ $request_document_type }}"
-                                                    class="form-control" id="request_document_type"
-                                                    name="request_document_type">
+                                                    value="{{ $search_price != null ? number_format($search_price) : '' }}"
+                                                    onkeyup="separate(this);" class="form-control" id="search_price"
+                                                    name="search_price">
                                             </div>
                                         </div>
                                     </div>
                                     <div class="modal-footer">
-                                        <a href="{{ route('list_sells_requests') }}"
+                                        <a href="{{ route('list_buyers_requests') }}"
                                             class="btn btn-danger hover-white text-white">بازنشانی صفحه</a>
                                         <button type="button" class="btn btn-secondary text-white"
                                             data-bs-dismiss="modal">انصراف</button>
@@ -131,7 +108,7 @@
                 <div class="table-responsive">
 
 
-                    @if (sizeof($data['list_seller_requests']) > 0)
+                    @if (sizeof($data['buyer_requests']) > 0)
                         <table class="table align-middle">
                             <thead>
                                 <tr class="text-center">
@@ -145,30 +122,24 @@
                                     <th scope="col">نوع درخواست</th>
                                     <th scope="col">نوع ملک</th>
                                     <th scope="col">قیمت</th>
-                                    <th scope="col">فروخته شده به</th>
-                                    <th scope="col">آدرس</th>
                                     <th scope="col">عملیات</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($data['list_seller_requests'] as $item)
+                                @foreach ($data['buyer_requests'] as $item)
                                     <tr class="text-center">
                                         <td class="text-start">
                                             <div class="d-flex align-items-center">
                                                 <div class="d-flex align-items-center">
-                                                    <div class="flex-shrink-0 lh-1">
-                                                        <img src="{{ asset($item->images->path ?? 'assets/images/sellers-1.jpg') }}"
-                                                            class="wh-44 rounded-circle" alt="user">
-                                                    </div>
                                                     <div class="flex-grow-1 ms-10">
-                                                        <h4 class="fw-semibold fs-16 mb-0">{{ $item->seller_name }}</h4>
-                                                        <a href="tel:{{$item->seller_phone}}"><span class="text-gray-light">{{ $item->seller_phone }}</span></a>
+                                                        <h4 class="fw-semibold fs-16 mb-0">{{ $item->name }}</h4>
+                                                        <a href="tel:{{$item->phone}}"><span class="text-gray-light">{{ $item->phone }}</span></a>
                                                     </div>
                                                 </div>
                                             </div>
                                         </td>
                                         {{-- <td>
-                                            <a href="callto:{{ $item->seller_phone }}">{{ $item->seller_phone }}</a>
+                                            <a href="callto:{{ $item->phone }}">{{ $item->phone }}</a>
                                         </td> --}}
                                         <td>
                                             <span>
@@ -187,32 +158,15 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <span
-                                                class="{{ $item->buyer_name != null ? 'bg-success' : 'bg-danger' }} text-white">{{ $item->buyer_name ?? 'فروش نرفته' }}</span>
-                                        </td>
-                                        <td>
-                                            <span>{{ $item->street_name }}</span>
-                                        </td>
-                                        <td>
                                             <div class="d-flex gap-3 justify-content-center mb-4 pb-1">
                                                 <button class="btn btn-primary py-2 px-3 text-white fw-semibold rounded-3"
                                                     data-bs-toggle="modal"
                                                     data-bs-target="#editUserModal{{ $item->id }}">
                                                     جزئیات
                                                 </button>
-                                                <a href="{{ route('seller_requests', $item->seller_id) }}"
+                                                <a href="{{ route('buyer_requests', $item->id) }}"
                                                     class="btn btn-info py-2 px-3 text-white fw-semibold rounded-3">
                                                     درخواست‌ها
-                                                </a>
-                                                <button class="btn btn-success py-2 px-3 text-white fw-semibold rounded-3"
-                                                    data-bs-toggle="modal"
-                                                    data-bs-target="#buldingSellModal{{ $item->id }}">
-                                                    فروش ملک
-                                                </button>
-                                                <a href="{{ route('seller_request_print_pdf', $item->id) }}"
-                                                    target="_blank"
-                                                    class="btn btn-danger py-2 px-3 text-white fw-semibold rounded-3">
-                                                    PDF
                                                 </a>
                                             </div>
                                         </td>
@@ -234,7 +188,7 @@
 
                                                 <div class="offcanvas-body p-4">
                                                     <input type="hidden" name="request_id" value="{{ $item->id }}">
-                                                    <input type="hidden" name="seller_id" value="{{ $item->id }}">
+                                                    <input type="hidden" name="buyer_id" value="{{ $item->id }}">
                                                     <div class="form-group mb-4">
                                                         <label class="label">تاریخ ثبت *</label>
                                                         <input type="text" name="created_at" disabled
@@ -257,17 +211,17 @@
                                                                             </select> --}}
                                                     </div>
                                                     <div class="form-group mb-4">
-                                                        <label class="label">نام فروشنده *</label>
-                                                        <input type="text" name="seller_name" disabled
-                                                            value="{{ $item->seller_name }}"
-                                                            class="form-control text-dark" placeholder="نام فروشنده">
+                                                        <label class="label">نام خریدار *</label>
+                                                        <input type="text" name="name" disabled
+                                                            value="{{ $item->name }}"
+                                                            class="form-control text-dark" placeholder="نام خریدار">
                                                     </div>
                                                     <div class="form-group mb-4">
-                                                        <label class="label">شماره تماس فروشنده *</label>
-                                                        <input type="text" name="seller_phone" disabled
-                                                            value="{{ $item->seller_phone }}"
+                                                        <label class="label">شماره تماس خریدار *</label>
+                                                        <input type="text" name="phone" disabled
+                                                            value="{{ $item->phone }}"
                                                             class="form-control text-dark"
-                                                            placeholder="شماره تماس فروشنده">
+                                                            placeholder="شماره تماس خریدار">
                                                     </div>
                                                     <div class="form-group mb-4">
                                                         <label class="label">نوع ملک *</label>
@@ -307,30 +261,6 @@
                                                         </div>
                                                     </div>
                                                     <div class="form-group mb-4">
-                                                        <label class="label">ابعاد ساختمان *</label>
-                                                        <input type="text" disabled name="dimensions_building"
-                                                            value="{{ $item->dimensions_building }}" required
-                                                            class="form-control text-dark">
-                                                    </div>
-                                                    <div class="form-group mb-4">
-                                                        <label class="label">متراژ زمین *</label>
-                                                        <input type="text" disabled name="meterage_building"
-                                                            value="{{ $item->meterage_building }}" required
-                                                            class="form-control text-dark">
-                                                    </div>
-                                                    <div class="form-group mb-4">
-                                                        <label class="label">مدت ساخت *</label>
-                                                        <input type="text" disabled name="year_manufacture"
-                                                            value="{{ $item->year_manufacture }}" required
-                                                            class="form-control text-dark">
-                                                    </div>
-                                                    <div class="form-group mb-4">
-                                                        <label class="label">نوع سند *</label>
-                                                        <input type="text" disabled name="document_type"
-                                                            value="{{ $item->document_type }}" required
-                                                            class="form-control text-dark">
-                                                    </div>
-                                                    <div class="form-group mb-4">
                                                         <label class="label">قیمت *</label>
                                                         <input type="text" disabled
                                                             value="{{ number_format($item->price) }}" name="price"
@@ -340,42 +270,8 @@
                                                     <div class="form-group mb-4">
                                                         <label class="label">تعداد خواب *</label>
                                                         <input type="number" disabled
-                                                            value="{{ $item->number_bedrooms }}" name="number_bedrooms"
+                                                            value="{{ $item->bedrooms }}" name="bedrooms"
                                                             required class="form-control text-dark" placeholder="5">
-                                                    </div>
-                                                    <div class="form-group mb-4">
-                                                        <label class="label">امکانات *</label>
-                                                        <div class="form-control">
-                                                            <div class="form-check form-check-inline">
-                                                                <input class="form-check-input"
-                                                                    @checked($item->water == 1) type="checkbox" disabled
-                                                                    id="water" name="water" value="1">
-                                                                <label class="form-check-label" for="water">اب</label>
-                                                            </div>
-                                                            <div class="form-check form-check-inline">
-                                                                <input class="form-check-input"
-                                                                    @checked($item->electric == 1) type="checkbox" disabled
-                                                                    id="electric" name="electric" value="1">
-                                                                <label class="form-check-label" for="electric">برق</label>
-                                                            </div>
-                                                            <div class="form-check form-check-inline">
-                                                                <input class="form-check-input"
-                                                                    @checked($item->gas == 1) type="checkbox" disabled
-                                                                    id="gas" name="gas" value="1">
-                                                                <label class="form-check-label" for="gas">گاز</label>
-                                                            </div>
-                                                            <div class="form-check form-check-inline">
-                                                                <input class="form-check-input"
-                                                                    @checked($item->telephone == 1) type="checkbox" disabled
-                                                                    id="telephone" name="telephone" value="1">
-                                                                <label class="form-check-label"
-                                                                    for="telephone">تلفن</label>
-                                                            </div>
-                                                        </div>
-                                                    </div>
-                                                    <div class="form-group mb-4">
-                                                        <label class="label">جزئیات آدرس *</label>
-                                                        <textarea name="address" disabled class="form-control text-dark" id="" cols="30" rows="5">{{ $item->address }}</textarea>
                                                     </div>
                                                     <div class="form-group mb-4">
                                                         <label class="label">توضیحات</label>
@@ -403,36 +299,6 @@
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                         aria-label="بستن"></button>
                                                 </div>
-
-                                                <div class="offcanvas-body p-4">
-                                                    <form action="{{ route('building_sell') }}" method="post">
-                                                        @csrf
-                                                        <input type="hidden" name="request_seller_id"
-                                                            value="{{ $item->id }}">
-                                                        <input type="hidden" name="seller_name"
-                                                            value="{{ $item->seller_name }}">
-                                                        <div class="form-group mb-4">
-                                                            <label class="label">خریدار *</label>
-                                                            <select class="form-select form-control text-dark"
-                                                                name="buyer_id" aria-label="Default select example">
-                                                                <option>انتخاب کنید...</option>
-                                                                @foreach ($data['buyers'] as $byer_list)
-                                                                    <option value="{{ $byer_list->id }}">
-                                                                        {{ $byer_list->name }}-{{ $byer_list->phone }}
-                                                                    </option>
-                                                                @endforeach
-                                                            </select>
-                                                        </div>
-                                                        <div class="form-group d-flex gap-3 justify-content-end">
-                                                            <button type="submit"
-                                                                class="btn btn-primary text-white fw-semibold py-2 px-2 px-sm-3">
-                                                                <span class="py-sm-1 d-block">
-                                                                    <span>ثبت</span>
-                                                                </span>
-                                                            </button>
-                                                        </div>
-                                                    </form>
-                                                </div>
                                             </div>
                                         </div>
                                     </div>
@@ -447,7 +313,7 @@
                 </div>
             </div>
             <div class="mt-3">
-                {{ $data['list_seller_requests']->links() }}
+                {{ $data['buyer_requests']->links() }}
             </div>
         </div>
     </div>

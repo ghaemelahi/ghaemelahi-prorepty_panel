@@ -62,7 +62,7 @@ class SellerController extends Controller
         }
 
         $phone = english_number($request->phone);
-        DB::table('sellers')->insert([
+       $seller_id = DB::table('sellers')->insertGetId([
             'name'=>$request->name,
             'phone'=>$phone,
             'gender'=>$request->gender,
@@ -76,7 +76,7 @@ class SellerController extends Controller
         $description = "فروشنده $name به سیستم اضافه گردید.";
         $this->logService->saveLog($report, $description);
         // MARK:-> END SAVE LOG USER SYSTEM
-        return redirect()->route('sellers')->with('success_create_seller', "فروشنده $name با موفقیت ایجاد شد");
+        return redirect()->route('seller_requests',$seller_id)->with('success_create_seller', "فروشنده $name با موفقیت ایجاد شد");
     }
 
     public function update(Request $request){

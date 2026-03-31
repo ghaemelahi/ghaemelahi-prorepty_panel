@@ -47,6 +47,7 @@ Route::middleware(['auth','check_active'])->group(function () {
 
     // Buyer Requests System
     Route::prefix('buyer_request')->group(function () {
+        Route::get('/list_buyers', [BuyerRequestController::class, 'list_buyers'])->name('list_buyers_requests');
         Route::get('/{buyer_id}', [BuyerRequestController::class, 'index'])->name('buyer_requests');
         Route::get('proposal_building_list/{buyer_id}', [BuyerRequestController::class, 'proposal_building_list'])->name('proposal_building_list');
         Route::post('/store', [BuyerRequestController::class, 'store'])->name('buyer_request_store');
@@ -67,13 +68,13 @@ Route::middleware(['auth','check_active'])->group(function () {
     // seller Requests System
     Route::prefix('seller_request')->group(function () {
         Route::get('/list_sells', [RequestSellerController::class, 'list_sells'])->name('list_sells_requests');
-        Route::get('/test_export_pdf/{request_id}', [RequestSellerController::class, 'testExportPdf'])->name('seller_request_test_export_pdf');
-        Route::get('/print_pdf/{request_id}', [RequestSellerController::class, 'printPdf'])->name('seller_request_print_pdf');
         Route::get('/{seller_id}', [RequestSellerController::class, 'index'])->name('seller_requests');
         Route::post('/store', [RequestSellerController::class, 'store'])->name('seller_request_store');
         Route::post('/update', [RequestSellerController::class, 'update'])->name('seller_request_update');
         Route::post('/delete', [RequestSellerController::class, 'delete'])->name('seller_request_delete');
         Route::post('/undelete', [RequestSellerController::class, 'undelete'])->name('seller_request_undelete');
+        Route::get('/test_export_pdf/{request_id}', [RequestSellerController::class, 'testExportPdf'])->name('seller_request_test_export_pdf');
+        Route::get('/print_pdf/{request_id}', [RequestSellerController::class, 'printPdf'])->name('seller_request_print_pdf');
     });
 
     // seller Requests System

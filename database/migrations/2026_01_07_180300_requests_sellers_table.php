@@ -28,6 +28,7 @@ return new class extends Migration
             $table->tinyInteger('electric');
             $table->tinyInteger('gas');
             $table->tinyInteger('telephone');
+            $table->text('street_name');
             $table->text('address');
             $table->text('description');
             $table->enum('status',['doing','compelet'])->default('doing');

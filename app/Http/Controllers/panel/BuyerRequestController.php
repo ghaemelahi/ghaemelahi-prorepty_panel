@@ -7,6 +7,8 @@ namespace App\Http\Controllers\panel;
 use App\Http\Controllers\Controller;
 use Illuminate\Support\Facades\DB;
 use App\Http\Helpers\LogService;
+use App\Http\Requests\Buyers\RequestBuyers\ListBuyerRequest;
+use App\Models\Buyer;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Morilog\Jalali\Jalalian;
@@ -20,6 +22,49 @@ class BuyerRequestController extends Controller
     public function __construct(LogService $logService)
     {
         $this->logService = $logService;
+    }
+
+    public function list_buyers(ListBuyerRequest $request)
+    {
+
+        $search_reoperty_type = $request->search_reoperty_type;
+        $search_request_type = $request->search_request_type;
+        $search_price = $request->search_price != null ? str_replace(',', '', $request->search_price) : null;
+        $search_bedrooms = $request->search_bedrooms;
+        $search_info_buyer = $request->search_info_buyer;
+
+        $data['buyer_requests'] = DB::table('buyers')
+            ->join('buyer_requests', 'buyers.id', 'buyer_requests.buyer_id')
+            ->where('buyer_requests.is_deleted', 0);
+        if ($search_reoperty_type != null) {
+            $data['buyer_requests'] = $data['buyer_requests']->where('buyer_requests.reoperty_type', $search_reoperty_type);
+        }
+        if ($search_info_buyer != null) {
+            $data['buyer_requests'] = $data['buyer_requests']->where(function ($query) use ($search_info_buyer) {
+                $query->where('buyers.name', 'LIKE', '%$search_info_buyer%')
+                    ->where('buyers.phone', 'LIKE', "%$search_info_buyer%");
+            });
+        }
+        if ($search_request_type != null) {
+            $data['buyer_requests'] = $data['buyer_requests']->where('buyer_requests.request_type', $search_request_type);
+        }
+        if ($search_price != null) {
+            $data['buyer_requests'] = $data['buyer_requests']->where('buyer_requests.price', $search_price);
+        }
+        if ($search_bedrooms != null) {
+            $data['buyer_requests'] = $data['buyer_requests']->where('buyer_requests.bedrooms', $search_bedrooms);
+        }
+        $data['buyer_requests'] = $data['buyer_requests']->paginate(50)->through(function ($item) {
+            $item->persian_reoperty_type = match ($item->reoperty_type) {
+                'tejari' => 'تجاری',
+                'maskoni' => 'مسکونی',
+                'earth_maskoni' => 'زمین مسکونی',
+                'earth_tejari' => 'زمین تجاری',
+            };
+            return $item;
+        })->appends($request->query());
+        // dd($data['buyer_requests']);
+        return view('pages.buyers.buyer_request.list_buyers', compact('data', 'search_reoperty_type', 'search_request_type', 'search_price', 'search_bedrooms','search_info_buyer'));
     }
     public function index(Request $request, $buyer_id)
     {
@@ -123,6 +168,8 @@ class BuyerRequestController extends Controller
             'reoperty_type' => 'required|in:tejari,maskoni,earth_maskoni,earth_tejari',
             'request_type' => 'required|in:buy,ejareh',
             'price' => 'required',
+            'down_payment' => 'nullable',
+            'monthly_amount' => 'nullable',
             'bedrooms' => 'required',
             'description' => 'nullable|string',
         ]);
@@ -137,6 +184,8 @@ class BuyerRequestController extends Controller
             'buyer_id' => $request->buyer_id,
             'reoperty_type' => $request->reoperty_type,
             'price' => str_replace(",", "", $request->price),
+            'down_payment' => str_replace(",", "", $request->down_payment),
+            'monthly_amount' => str_replace(",", "", $request->monthly_amount),
             'request_type' => $request->request_type,
             'bedrooms' => english_number($request->bedrooms),
             'description' => $request->description ?? "_",
@@ -164,6 +213,8 @@ class BuyerRequestController extends Controller
             'status' => 'required|in:doing,compelet',
             'request_type' => 'required|in:buy,ejareh',
             'price' => 'required',
+            'down_payment' => 'nullable',
+            'monthly_amount' => 'nullable',
             'bedrooms' => 'required',
             'description' => 'nullable|string',
         ]);
@@ -178,6 +229,8 @@ class BuyerRequestController extends Controller
             'buyer_id' => $request->buyer_id,
             'reoperty_type' => $request->reoperty_type,
             'price' => str_replace(",", "", $request->price),
+            'down_payment' => str_replace(",", "", $request->down_payment),
+            'monthly_amount' => str_replace(",", "", $request->monthly_amount),
             'request_type' => $request->request_type,
             'bedrooms' => english_number($request->bedrooms),
             'status' => $request->status,

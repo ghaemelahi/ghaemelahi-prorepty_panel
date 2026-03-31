@@ -121,7 +121,7 @@
                                     <th scope="col">توضیحات</th>
                                     <th scope="col">اطلاعات تکمیلی</th>
                                     <th scope="col">عکس‌ها</th>
-                                    <th scope="col">تاریخ ثبت</th>
+                                    <th scope="col">آدرس</th>
                                     <th scope="col">عملیات</th>
                                     {{-- <th scope="col">ویرایش عکس‌ها</th> --}}
                                 </tr>
@@ -197,7 +197,7 @@
                                             </div>
                                         </td>
                                         <td>
-                                            <span class="d-block text-center">{{ $item->created_at }}</span>
+                                            <span class="d-block text-center">{{ $item->street_name }}</span>
                                         </td>
                                         <td class="justify-content-center">
                                             <button type="button"
@@ -304,10 +304,17 @@
                                                         aria-label="بستن"></button>
                                                 </div>
                                                 <div class="modal-body text-start">
+                                                    
+                                                    <div class="form-group mb-4 col-md-6">
+                                                        <label class="label">تاریخ ثبت *</label>
+                                                        <input type="text" disabled
+                                                            value="{{ $item->created_at }}"
+                                                            class="form-control text-dark">
+                                                    </div>
                                                     <!-- فرم توضیحات (نمونه، قابلیت افزودن اکشن و مقادیر بیشتر دارد) -->
 
                                                     <div class="form-group mb-4">
-                                                        <label class="label">توضیحات</label>
+                                                        <label class="label">جزئیات آدرس</label>
                                                         <textarea disabled class="form-control text-dark" id="" cols="30" rows="3">{{ $item->address }}</textarea>
                                                     </div>
                                                     <div class="form-group mb-4">
@@ -496,6 +503,20 @@
                                                                     onkeyup="separate(this);" placeholder="5,000,000">
                                                             </div>
                                                             <div class="form-group mb-4 col-md-6 col-sm-6">
+                                                                <label class="label">مبلغ ماهیانه</label>
+                                                                <input type="text"
+                                                                    value="{{ number_format($item->monthly_amount) }}"
+                                                                    name="monthly_amount" class="form-control text-dark"
+                                                                    onkeyup="separate(this);" placeholder="5,000,000">
+                                                            </div>
+                                                            <div class="form-group mb-4 col-md-6 col-sm-6">
+                                                                <label class="label">پول پیش</label>
+                                                                <input type="text"
+                                                                    value="{{ number_format($item->down_payment) }}"
+                                                                    name="down_payment" class="form-control text-dark"
+                                                                    onkeyup="separate(this);" placeholder="5,000,000">
+                                                            </div>
+                                                            <div class="form-group mb-4 col-md-6 col-sm-6">
                                                                 <label class="label">تعداد خواب *</label>
                                                                 <input type="number"
                                                                     value="{{ $item->number_bedrooms }}"
@@ -539,6 +560,10 @@
                                                             </div>
                                                             <div class="form-group mb-4">
                                                                 <label class="label">آدرس *</label>
+                                                                <input type="text" name="street_name" required class="form-control text-dark" value="{{ $item->street_name }}">
+                                                            </div>
+                                                            <div class="form-group mb-4">
+                                                                <label class="label">جزئیات آدرس *</label>
                                                                 <textarea name="address" class="form-control text-dark" id="" cols="30" rows="5">{{ $item->address }}</textarea>
                                                             </div>
                                                             <div class="form-group mb-4">
@@ -694,6 +719,16 @@
                         onkeyup="separate(this);">
                 </div>
                 <div class="form-group mb-4">
+                    <label class="label">مبلغ ماهیانه</label>
+                    <input type="text" name="monthly_amount" class="form-control text-dark"
+                        onkeyup="separate(this);">
+                </div>
+                <div class="form-group mb-4">
+                    <label class="label">پول پیش</label>
+                    <input type="text" name="down_payment" class="form-control text-dark"
+                        onkeyup="separate(this);">
+                </div>
+                <div class="form-group mb-4">
                     <label class="label">تعداد خواب *</label>
                     <input type="number" name="number_bedrooms" required class="form-control text-dark">
                 </div>
@@ -724,6 +759,10 @@
                 </div>
                 <div class="form-group mb-4">
                     <label class="label">آدرس *</label>
+                    <input type="text" name="street_name" required class="form-control text-dark">
+                </div>
+                <div class="form-group mb-4">
+                    <label class="label">جزئیات آدرس *</label>
                     <textarea name="address" class="form-control text-dark" id="" cols="30" rows="5"></textarea>
                 </div>
                 <div class="form-group mb-4">

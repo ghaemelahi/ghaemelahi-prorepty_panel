@@ -4,12 +4,12 @@
 @section('content')
     {{-- دادهٔ خام برای کارت‌های خلاصه (بعداً از کنترلر مقداردهی کنید) --}}
     @php
-        $stats = [
-            'buyers_count' => 0,
-            'sellers_count' => 0,
-            'total_sell_requests' => 0,
-            'total_deals' => 0,
-        ];
+        // $stats = [
+        //     'buyers_count' => 0,
+        //     'sellers_count' => 0,
+        //     'total_sell_requests' => 0,
+        //     'total_deals' => 0,
+        // ];
         $shareChartData = $shareChartData ?? [
             ['label' => 'A', 'value' => 60],
             ['label' => 'B', 'value' => 40],

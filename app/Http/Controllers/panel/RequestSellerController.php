@@ -80,63 +80,6 @@ class RequestSellerController extends Controller
         return view("pages.sellers.request_seller.list", compact('data', 'search_reoperty_type', 'search_request_type', 'search_price', 'search_bedrooms'));
     }
 
-    /**
-     * خروجی PDF درخواست فروش (با spatie/laravel-pdf — فارسی و عکس درست)
-     */
-    /* public function testExportPdf($request_id)
-    {
-        $validate = Validator::make(['request_id' => $request_id], [
-            'request_id' => 'required|exists:request_sellers,id',
-        ]);
-        if ($validate->fails()) {
-            return redirect()->back()->withErrors($validate, 'error_not_found_request');
-        }
-
-        $item = DB::table('request_sellers')
-            ->join('sellers', 'request_sellers.seller_id', 'sellers.id')
-            ->select([
-                'request_sellers.*',
-                'sellers.name as seller_name',
-                'sellers.phone as seller_phone',
-            ])
-            ->where('request_sellers.is_deleted', 0)
-            ->where('request_sellers.id', $request_id)
-            ->first();
-
-        $imageRows = DB::table('images_requests_seller')
-            ->where('request_seller_id', $request_id)
-            ->where('is_deleted', 0)
-            ->orderBy('id')
-            ->limit(5)
-            ->get(['path', 'id']);
-
-        $images = $imageRows->map(function ($row) {
-            $path = public_path($row->path);
-            $obj = (object) ['id' => $row->id, 'path' => $row->path, 'data_uri' => null];
-            if (file_exists($path)) {
-                $mime = match (strtolower(pathinfo($path, PATHINFO_EXTENSION))) {
-                    'jpg', 'jpeg' => 'jpeg',
-                    'png' => 'png',
-                    'gif' => 'gif',
-                    'webp' => 'webp',
-                    default => 'jpeg',
-                };
-                $obj->data_uri = 'data:image/' . $mime . ';base64,' . base64_encode(file_get_contents($path));
-            }
-            return $obj;
-        });
-
-        $date = Jalalian::now()->format('Y/m/d');
-
-        return Pdf::view('pages.sellers.request_seller.exportPDF', [
-            'item'  => $item,
-            'images' => $images,
-            'date'  => $date,
-        ])
-            ->format('a4')
-            ->name('request-' . $request_id . '.pdf')
-            ->download();
-    }*/
     public function testExportPdf($request_id)
     {
         $validate = Validator::make(['request_id' => $request_id], [
@@ -297,7 +240,7 @@ class RequestSellerController extends Controller
             $data['list_seller_requests'] = $data['list_seller_requests']->where('price', $request->request_price);
         }
         if ($request->request_address) {
-            $data['list_seller_requests'] = $data['list_seller_requests']->where('address', 'LIKE', "%$request->request_address%");
+            $data['list_seller_requests'] = $data['list_seller_requests']->where('street_name', 'LIKE', "%$request->request_address%");
         }
         if ($request->request_meterage_building) {
             $data['list_seller_requests'] = $data['list_seller_requests']->where('meterage_building', $request->request_meterage_building);
@@ -355,7 +298,10 @@ class RequestSellerController extends Controller
             'reoperty_type' => 'required|in:tejari,maskoni,earth_maskoni,earth_tejari',
             'request_type' => 'required|in:sell,ejareh',
             'price' => 'required',
+            'down_payment' => 'nullable',
+            'monthly_amount' => 'nullable',
             'address' => 'required',
+            'street_name' => 'required',
             'year_manufacture' => 'required',
             'meterage_building' => 'required',
             'dimensions_building' => 'required',
@@ -387,7 +333,9 @@ class RequestSellerController extends Controller
         $request_seller_id = DB::table('request_sellers')->insertGetId([
             'seller_id' => $request->seller_id,
             'reoperty_type' => $request->reoperty_type,
-            'price' => str_replace(",", "", $request->price),
+            'price' => str_replace(",", "", english_number($request->price)),
+            'down_payment' => str_replace(",", "", english_number($request->down_payment)),
+            'monthly_amount' => str_replace(",", "", english_number($request->monthly_amount)),
             'request_type' => $request->request_type,
             'number_bedrooms' => english_number($request->number_bedrooms),
             'year_manufacture' => english_number($request->year_manufacture),
@@ -400,6 +348,7 @@ class RequestSellerController extends Controller
             'gas' => $request->gas,
             'telephone' => $request->telephone,
             'address' => $request->address,
+            'street_name' => $request->street_name,
             'description' => $request->description ?? "_",
             'archive_date' => $archive_date,
             'created_at' => Jalalian::now()->format("Y-m-d H:i:s"),
@@ -441,7 +390,10 @@ class RequestSellerController extends Controller
             'reoperty_type' => 'required|in:tejari,maskoni,earth_maskoni,earth_tejari',
             'request_type' => 'required|in:sell,ejareh',
             'price' => 'required',
+            'down_payment' => 'nullable',
+            'monthly_amount' => 'nullable',
             'address' => 'required',
+            'street_name' => 'required',
             'year_manufacture' => 'required',
             'meterage_building' => 'required',
             'dimensions_building' => 'required',
@@ -459,6 +411,7 @@ class RequestSellerController extends Controller
         if ($validate->fails()) {
             return redirect()->back()->withErrors($validate, 'error_update_seller_request');
         }
+        // dd($request->all());
 
         $request->description = $request->description ?? "_";
         $request->water = $request->water ?? 0;
@@ -471,7 +424,9 @@ class RequestSellerController extends Controller
         DB::table('request_sellers')->whereId($request->request_id)->update([
             'seller_id' => $request->seller_id,
             'reoperty_type' => $request->reoperty_type,
-            'price' => str_replace(",", "", $request->price),
+            'price' => str_replace(",", "", english_number($request->price)),
+            'down_payment' => str_replace(",", "", english_number($request->down_payment)),
+            'monthly_amount' => str_replace(",", "", english_number($request->monthly_amount)),
             'request_type' => $request->request_type,
             'number_bedrooms' => english_number($request->number_bedrooms),
             'year_manufacture' => english_number($request->year_manufacture),
@@ -484,6 +439,7 @@ class RequestSellerController extends Controller
             'gas' => $request->gas,
             'telephone' => $request->telephone,
             'address' => $request->address,
+            'street_name' => $request->street_name,
             'status' => $request->status,
             'description' => $request->description ?? "_",
             'updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),

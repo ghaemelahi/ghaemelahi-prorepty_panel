@@ -310,6 +310,20 @@
                                                                 onkeyup="separate(this);" placeholder="5,000,000">
                                                         </div>
                                                         <div class="form-group mb-4">
+                                                            <label class="label">مبلغ ماهیانه </label>
+                                                            <input type="text"
+                                                                value="{{ number_format($item->monthly_amount) }}"
+                                                                name="monthly_amount" class="form-control text-dark"
+                                                                onkeyup="separate(this);" placeholder="5,000,000">
+                                                        </div>
+                                                        <div class="form-group mb-4">
+                                                            <label class="label">پول پیش </label>
+                                                            <input type="text"
+                                                                value="{{ number_format($item->down_payment) }}"
+                                                                name="down_payment" class="form-control text-dark"
+                                                                onkeyup="separate(this);" placeholder="5,000,000">
+                                                        </div>
+                                                        <div class="form-group mb-4">
                                                             <label class="label">تعداد خواب *</label>
                                                             <input type="number" value="{{ $item->bedrooms }}"
                                                                 name="bedrooms" required class="form-control text-dark"
@@ -441,6 +455,18 @@
                 <div class="form-group mb-4">
                     <label class="label">قیمت *</label>
                     <input type="text" name="price" required class="form-control text-dark"
+                        onkeyup="separate(this);" placeholder="5,000,000">
+                </div>
+                <div class="form-group mb-4">
+                    <label class="label">مبلغ ماهیانه </label>
+                    <input type="text"
+                        name="monthly_amount" class="form-control text-dark"
+                        onkeyup="separate(this);" placeholder="5,000,000">
+                </div>
+                <div class="form-group mb-4">
+                    <label class="label">پول پیش </label>
+                    <input type="text"
+                        name="down_payment" class="form-control text-dark"
                         onkeyup="separate(this);" placeholder="5,000,000">
                 </div>
                 <div class="form-group mb-4">
