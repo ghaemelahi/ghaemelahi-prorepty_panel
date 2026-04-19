@@ -133,12 +133,12 @@
                                         <div class="mb-3 text-start col-md-6">
                                             <label class="form-label d-block mb-2">وضعیت کاربری</label>
                                             <div class="form-check form-check-inline">
-                                                <input class="form-check-input" @checked($search_active == '1') type="radio" id="1"
+                                                <input class="form-check-input" @checked($search_active == 1) type="radio" id="1"
                                                     name="search_active" value="1">
                                                 <label class="form-check-label text-success" for="1">فعال</label>
                                             </div>
                                             <div class="form-check form-check-inline">
-                                                <input class="form-check-input" @checked($search_active == '0') type="radio" id="0" name="search_active"
+                                                <input class="form-check-input" @checked($search_active == 0) type="radio" id="0" name="search_active"
                                                     value="0">
                                                 <label class="form-check-label text-danger" for="0">غیرفعال</label>
                                             </div>
@@ -328,8 +328,9 @@
                                                         </div>
                                                         <div class="modal-footer">
                                                             <form method="POST"
-                                                                action="{{ route('user_system_delete') }}">
+                                                                action="{{ route('user_system_delete',$user->id) }}">
                                                                 @csrf
+                                                                @method('DELETE')
                                                                 <input type="hidden" name="user_id"
                                                                     value="{{ $user->id }}">
                                                                 <input type="hidden" name="name"

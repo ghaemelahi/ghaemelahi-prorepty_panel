@@ -13,15 +13,15 @@ return new class extends Migration
     {
         Schema::create('request_sellers', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('seller_id');
-            $table->foreign('seller_id')->references('id')->on('sellers');
+            $table->foreignId('seller_id')->constrained('sellers');
+            // $table->foreign('seller_id')->references('id')->on('sellers');
             $table->string('reoperty_type');
             $table->string('request_type');
             $table->string('dimensions_building');
             $table->string('meterage_building');
             $table->string('year_manufacture');
             $table->string('document_type');
-            $table->unsignedBigInteger('price');
+            $table->unsignedBigInteger('price')->default(0);
             $table->string('options');
             $table->integer('number_bedrooms');
             $table->tinyInteger('water');
@@ -35,7 +35,7 @@ return new class extends Migration
             $table->tinyInteger('is_deleted')->default(0);
             $table->string('created_at',60);
             $table->string('updated_at',60);
-            $table->string('delete_at',60)->nullable();
+            $table->softDeletes();
         });
     }
 

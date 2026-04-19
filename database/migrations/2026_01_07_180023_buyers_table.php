@@ -19,7 +19,7 @@ return new class extends Migration
             $table->tinyInteger('is_deleted')->default(0);
             $table->string('created_at',60);
             $table->string('updated_at',60);
-            $table->string('delete_at',60)->nullable();
+            $table->softDeletes();
         });
     }
 

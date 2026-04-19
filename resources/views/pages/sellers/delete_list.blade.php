@@ -31,7 +31,7 @@
                                                 <h6>{{ $item->phone }}</h6>
                                             </a>
                                         </td>
-                                        <td>{{ $item->delete_at }}</td>
+                                        <td>{{ $item->deleted_at }}</td>
                                         <td>
                                             <form action="{{ route('seller_undelete') }}" method="post">
                                                 @csrf

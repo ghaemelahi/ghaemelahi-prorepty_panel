@@ -6,6 +6,8 @@ namespace App\Http\Controllers\panel;
 
 use App\Http\Controllers\Controller;
 use App\Http\Helpers\LogService;
+use App\Http\Requests\sell\RequestSell\ListRequestSellRequest;
+use App\Http\Requests\sell\RequestSell\RentListRequestSellRequest;
 use Barryvdh\DomPDF\Facade\Pdf;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
@@ -203,18 +205,8 @@ class RequestSellerController extends Controller
         ]);
     }
 
-    public function list_sells(Request $request)
+    public function list_sells(ListRequestSellRequest $request)
     {
-        $validate = Validator::make($request->all(), [
-            'request_reoperty_type' => 'nullable|in:tejari,maskoni,earth_maskoni,earth_tejari',
-            'search_request_type' => 'nullable|in:sell,ejareh',
-            'request_price' => 'nullable|string',
-            'request_address' => 'nullable|string',
-            'search_info_seller' => 'nullable',
-        ]);
-        if ($validate->fails()) {
-            return redirect()->back()->withErrors($validate, 'error_not_found_seller');
-        }
 
         $request->request_price = $request->request_price != null ? str_replace(",", "", $request->request_price) : '';
         // dd($request->all());
@@ -226,8 +218,8 @@ class RequestSellerController extends Controller
                 'sellers.name as seller_name',
                 'sellers.phone as seller_phone',
                 'building_buyers.buyer_name'
-            ])
-            ->where('request_sellers.is_deleted', 0);
+            ])->where('request_sellers.request_type', "sell")
+            ->where('request_sellers.is_deleted', 0)->orderByDesc('request_sellers.id');
         // ->where('building_buyers.buyer_name',null);
         if ($request->request_reoperty_type) {
             // dd($request->request_reoperty_type == 'earth');
@@ -289,15 +281,97 @@ class RequestSellerController extends Controller
         ]);
     }
 
+    public function rent_list_sells(RentListRequestSellRequest $request)
+    {
+
+        $request->monthly_amount = $request->monthly_amount != null ? str_replace(",", "", $request->monthly_amount) : '';
+        $request->down_payment = $request->down_payment != null ? str_replace(",", "", $request->down_payment) : '';
+        // dd($request->all());
+        $data['list_seller_requests'] = DB::table('request_sellers')
+            ->join('sellers', 'request_sellers.seller_id', 'sellers.id')
+            ->leftJoin('building_buyers', 'request_sellers.id', 'building_buyers.request_seller_id')
+            ->select([
+                'request_sellers.*',
+                'sellers.name as seller_name',
+                'sellers.phone as seller_phone',
+                'building_buyers.buyer_name'
+            ])
+            ->where('request_sellers.is_deleted', 0)->whereRequest_type('ejareh')->orderByDesc('request_sellers.id');
+        // ->where('building_buyers.buyer_name',null);
+        if ($request->request_reoperty_type) {
+            // dd($request->request_reoperty_type == 'earth');
+            $data['list_seller_requests'] = $data['list_seller_requests']->where('reoperty_type', $request->request_reoperty_type);
+        }
+        if ($request->search_request_type) {
+            $data['list_seller_requests'] = $data['list_seller_requests']->where('request_type', $request->search_request_type);
+        }
+        if (!is_null($request->request_monthly_amount)) {
+            $data['list_seller_requests'] = $data['list_seller_requests']->whereMonthly_amount($request->request_monthly_amount);
+        }
+        if (!is_null($request->request_down_payment)) {
+            $data['list_seller_requests'] = $data['list_seller_requests']->whereDown_payment($request->request_down_payment);
+        }
+        if ($request->request_address) {
+            $data['list_seller_requests'] = $data['list_seller_requests']->where('street_name', 'LIKE', "%$request->request_address%");
+        }
+        if ($request->request_meterage_building) {
+            $data['list_seller_requests'] = $data['list_seller_requests']->where('meterage_building', $request->request_meterage_building);
+        }
+        if ($request->request_year_manufacture) {
+            $data['list_seller_requests'] = $data['list_seller_requests']->where('year_manufacture', $request->request_year_manufacture);
+        }
+        if ($request->request_document_type) {
+            $data['list_seller_requests'] = $data['list_seller_requests']->where('document_type', $request->request_document_type);
+        }
+        if ($request->search_info_seller) {
+            $data['list_seller_requests'] = $data['list_seller_requests']->where(function ($query) use ($request) {
+                $query->where('sellers.name', 'like', "%{$request->search_info_seller}%")
+                    ->orWhere('sellers.phone', 'like', "%{$request->search_info_seller}%");
+            });
+        }
+        $data['list_seller_requests'] = $data['list_seller_requests']->paginate(50)
+            ->through(function ($item) {
+                $item->persian_reoperty_type = match($item->reoperty_type){
+                    'tejari'=>'تجاری',
+                    'maskoni'=>'مسکونی',
+                    'earth_maskoni'=>'زمین مسکونی',
+                    'earth_tejari'=>'زمین تجاری',
+                };
+
+                $item->images = DB::table('images_requests_seller')
+                    ->where('request_seller_id', $item->id)
+                    ->where('is_deleted', 0)
+                    ->first(['path', 'id']);
+                return $item;
+            })->appends($request->query());
+        // $data['seller_info'] = DB::table('sellers')->whereId($seller_id)->first();
+
+        // dd($data['list_seller_requests']);
+        $data['buyers'] = DB::table('buyers')->where('is_deleted', 0)->get(['id', 'name', 'phone']);
+        return view("pages.sellers.request_seller.rent_list", [
+            'data' => $data,
+            'request_reoperty_type' => $request->request_reoperty_type,
+            'search_request_type' => $request->search_request_type,
+            'request_monthly_amount' => $request->request_monthly_amount,
+            'request_down_payment' => $request->request_down_payment,
+            'request_address' => $request->request_address,
+            'search_info_seller' => $request->search_info_seller,
+            'request_meterage_building' => $request->request_meterage_building,
+            'request_year_manufacture' => $request->request_year_manufacture,
+            'request_document_type' => $request->request_document_type,
+        ]);
+    }
+
     public function store(Request $request)
     {
+        // dd($request->all());
         $validate = Validator::make($request->all(), [
             'seller_id' => 'required|exists:sellers,id',
             'seller_phone' => 'required|exists:sellers,phone',
             'seller_name' => 'required',
             'reoperty_type' => 'required|in:tejari,maskoni,earth_maskoni,earth_tejari',
             'request_type' => 'required|in:sell,ejareh',
-            'price' => 'required',
+            'price' => 'nullable',
             'down_payment' => 'nullable',
             'monthly_amount' => 'nullable',
             'address' => 'required',
@@ -325,6 +399,9 @@ class RequestSellerController extends Controller
         $request->electric = $request->electric ?? 0;
         $request->gas = $request->gas ?? 0;
         $request->telephone = $request->telephone ?? 0;
+        $request->down_payment = $request->down_payment ?? "0";
+        $request->monthly_amount = $request->monthly_amount ?? "0";
+        $request->price = $request->price ?? "0";
         $request->options = $request->options ?? "_";
 
         $archive_date = $request->request_type == 'ejareh' ? Jalalian::now()->addDays(40)->format('Y-m-d') : null;
@@ -389,7 +466,7 @@ class RequestSellerController extends Controller
             'seller_name' => 'required',
             'reoperty_type' => 'required|in:tejari,maskoni,earth_maskoni,earth_tejari',
             'request_type' => 'required|in:sell,ejareh',
-            'price' => 'required',
+            'price' => 'nullable',
             'down_payment' => 'nullable',
             'monthly_amount' => 'nullable',
             'address' => 'required',
@@ -419,14 +496,17 @@ class RequestSellerController extends Controller
         $request->gas = $request->gas ?? 0;
         $request->telephone = $request->telephone ?? 0;
         $request->options = $request->options ?? "_";
+        // $request->down_payment = $request->down_payment ?? "0";
+        // $request->monthly_amount = $request->monthly_amount ?? "0";
+        // $request->price = $request->price ?? "0";
 
         $request_seller_id = $request->request_id;
         DB::table('request_sellers')->whereId($request->request_id)->update([
             'seller_id' => $request->seller_id,
             'reoperty_type' => $request->reoperty_type,
-            'price' => str_replace(",", "", english_number($request->price)),
-            'down_payment' => str_replace(",", "", english_number($request->down_payment)),
-            'monthly_amount' => str_replace(",", "", english_number($request->monthly_amount)),
+            'price' => str_replace(",", "", english_number("$request->price")),
+            'down_payment' => str_replace(",", "", english_number("$request->down_payment")),
+            'monthly_amount' => str_replace(",", "", english_number("$request->monthly_amount")),
             'request_type' => $request->request_type,
             'number_bedrooms' => english_number($request->number_bedrooms),
             'year_manufacture' => english_number($request->year_manufacture),
@@ -485,13 +565,13 @@ class RequestSellerController extends Controller
         DB::table('request_sellers')->whereId($request->request_id)->update([
             'is_deleted' => 1,
             'updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
-            'delete_at' => Jalalian::now()->format("Y-m-d H:i:s"),
+            'deleted_at' => Jalalian::now()->format("Y-m-d H:i:s"),
         ]);
 
         DB::table("images_requests_seller")->where("request_seller_id", $request->request_id)->update([
             'is_deleted' => 1,
             'updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
-            'delete_at' => Jalalian::now()->format("Y-m-d H:i:s"),
+            'deleted_at' => Jalalian::now()->format("Y-m-d H:i:s"),
         ]);
 
         // MARK:-> SAVE LOG USER SYSTEM
@@ -521,7 +601,7 @@ class RequestSellerController extends Controller
                 'request_sellers.id',
                 'request_sellers.request_type',
                 'request_sellers.reoperty_type',
-                'request_sellers.delete_at',
+                'request_sellers.deleted_at',
                 'sellers.id as seller_id',
                 'sellers.name',
                 'sellers.phone',
@@ -531,7 +611,7 @@ class RequestSellerController extends Controller
                     'sell' => 'فروش',
                     'ejareh' => 'اجاره',
                 };
-
+                $item->deleted_at = Jalalian::fromDateTime($item->deleted_at)->format("H:i:s Y/m/d");
                 $item->reoperty_type = match ($item->reoperty_type) {
                     'maskoni' => 'مسکونی',
                     'tejari' => 'تجاری',
@@ -559,7 +639,14 @@ class RequestSellerController extends Controller
         DB::table('request_sellers')->whereId($request->request_id)->update([
             'is_deleted' => 0,
             'updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
-            'delete_at' => null,
+            'deleted_at' => null,
+        ]);
+
+
+        DB::table('images_requests_seller')->whereRequest_seller_id($request->request_id)->update([
+            'is_deleted' => 0,
+            'updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
+            'deleted_at' => null,
         ]);
 
         // MARK:-> SAVE LOG USER SYSTEM

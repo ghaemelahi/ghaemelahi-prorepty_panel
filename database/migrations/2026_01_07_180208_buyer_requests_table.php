@@ -13,17 +13,17 @@ return new class extends Migration
     {
         Schema::create('buyer_requests', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('buyer_id');
-            $table->foreign('buyer_id')->references('id')->on('buyers');
+            $table->foreignId('buyer_id')->constrained('buyers');
+            // $table->foreign('buyer_id')->references('id')->on('buyers');
             $table->string('reoperty_type');
-            $table->unsignedBigInteger('price');
+            $table->unsignedBigInteger('price')->default(0);
             $table->string('request_type');
             $table->integer('bedrooms');
             $table->text('description');
             $table->tinyInteger('is_deleted')->default(0);
             $table->string('created_at',60);
             $table->string('updated_at',60);
-            $table->string('delete_at',60)->nullable();
+            $table->softDeletes();
         });
     }
 

@@ -11059,6 +11059,10 @@ padding-left: 3rem;
   visibility: hidden !important;
 }
 
+.content-visibility {
+  content-visibility: hidden !important;
+}
+
 .z-n1 {
   z-index: -1 !important;
 }

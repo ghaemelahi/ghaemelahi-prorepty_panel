@@ -59,6 +59,28 @@
 
                 <li class="menu-item">
                     <a href="javascript:void(0);" class="menu-link menu-toggle active">
+                        <i class="menu-icon tf-icons flaticon-price-tag"></i>
+                        {{-- <i data-feather="shopping-cart" class="menu-icon tf-icons flaticon-shopping-cart"></i> --}}
+                        <span class="title">املاک برای خرید</span>
+                    </a>
+                    <ul class="menu-sub">
+                        <li class="menu-item">
+                            <a href="{{ route('list_buyers_requests') }}" class="menu-link">
+                                لیست املاک برای خرید
+                            </a>
+                        </li>
+                    </ul>
+                    <ul class="menu-sub">
+                        <li class="menu-item">
+                            <a href="{{ route('rent_list_requests') }}" class="menu-link">
+                                لیست املاک برای اجاره
+                            </a>
+                        </li>
+                    </ul>
+                </li>
+
+                <li class="menu-item">
+                    <a href="javascript:void(0);" class="menu-link menu-toggle active">
                         <i class="menu-icon tf-icons flaticon-price-tag-1"></i>
                         {{-- <i data-feather="shopping-cart" class="menu-icon tf-icons flaticon-shopping-cart"></i> --}}
                         <span class="title">فروشندگان</span>
@@ -85,18 +107,10 @@
                             </a>
                         </li>
                     </ul>
-                </li>
-
-                <li class="menu-item">
-                    <a href="javascript:void(0);" class="menu-link menu-toggle active">
-                        <i class="menu-icon tf-icons flaticon-price-tag"></i>
-                        {{-- <i data-feather="shopping-cart" class="menu-icon tf-icons flaticon-shopping-cart"></i> --}}
-                        <span class="title">املاک برای خرید</span>
-                    </a>
                     <ul class="menu-sub">
                         <li class="menu-item">
-                            <a href="{{ route('list_buyers_requests') }}" class="menu-link">
-                                لیست املاک برای خرید
+                            <a href="{{ route('rent_list_sells_requests') }}" class="menu-link">
+                                لیست املاک برای اجاره
                             </a>
                         </li>
                     </ul>

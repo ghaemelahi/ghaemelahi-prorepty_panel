@@ -18,7 +18,7 @@
     <div class="card bg-white border-0 rounded-10 mb-4">
         <div class="card-body p-4">
             <div class="d-flex justify-content-between align-items-center border-bottom pb-20 mb-20">
-                <h4 class="fw-semibold fs-18 mb-0">همه درخواست‌های خرید ({{ $data['buyer_info']->name }})</h4>
+                <h4 class="fw-semibold fs-18 mb-0">همه درخواست‌های خرید ({{ $data->name }})</h4>
                 <div class="d-sm-flex align-items-center">
                     <button class="border-0 btn btn-primary py-2 px-3 px-sm-4 text-white fs-14 fw-semibold rounded-3"
                         data-bs-toggle="offcanvas" data-bs-target="#offcanvasRight" aria-controls="offcanvasRight">
@@ -28,7 +28,7 @@
                         </span>
                     </button>
                     <div class="dropdown action-opt ms-sm-4 mt-3 mt-sm-0">
-                        <a href="{{ route('proposal_building_list', $data['buyer_info']->id) }}"
+                        <a href="{{ route('proposal_building_list', $data->id) }}"
                             class="btn btn-info py-2 px-3 text-white fw-semibold rounded-3">
                             ملک های پیشنهادی
                         </a>
@@ -109,7 +109,7 @@
                                     </div>
                                 </div>
                                 <div class="modal-footer">
-                                    <a href="{{ route('buyer_requests', $data['buyer_info']->id) }}"
+                                    <a href="{{ route('buyer_requests', $data->id) }}"
                                         class="btn btn-danger hover-white text-white">بازنشانی صفحه</a>
                                     <button type="button" class="btn btn-secondary text-white"
                                         data-bs-dismiss="modal">انصراف</button>
@@ -121,7 +121,7 @@
                 </div>
             </div>
             <div class="default-table-area project-list style-two">
-                @if (sizeof($data['buyer_requests']) > 0)
+                @if (sizeof($data->buyer_requests) > 0)
                     <div class="table-responsive">
                         <table class="table align-middle">
                             <thead>
@@ -137,7 +137,7 @@
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach ($data['buyer_requests'] as $item)
+                                @foreach ($data->buyer_requests as $item)
                                     <tr>
                                         <td>
                                             <div class="flex-grow-1 ms-3">
@@ -236,12 +236,14 @@
                                                 </div>
 
                                                 <div class="offcanvas-body p-4">
-                                                    <form action="{{ route('buyer_request_update') }}" method="POST">
+                                                    <form action="{{ route('buyer_request_update', $item->id) }}"
+                                                        method="POST">
                                                         @csrf
+                                                        @method('PUT')
                                                         <input type="hidden" name="request_id"
                                                             value="{{ $item->id }}">
                                                         <input type="hidden" name="buyer_id"
-                                                            value="{{ $data['buyer_info']->id }}">
+                                                            value="{{ $data->id }}">
                                                         <div class="form-group mb-4">
                                                             <label class="label">وضعیت درخواست *</label>
                                                             <select class="form-select form-control text-dark"
@@ -257,13 +259,13 @@
                                                         <div class="form-group mb-4">
                                                             <label class="label">نام خریدار *</label>
                                                             <input type="text" name="buyer_name" readonly
-                                                                value="{{ $data['buyer_info']->name }}"
+                                                                value="{{ $data->name }}"
                                                                 class="form-control text-dark" placeholder="نام خریدار">
                                                         </div>
                                                         <div class="form-group mb-4">
                                                             <label class="label">شماره تماس خریدار *</label>
                                                             <input type="text" name="buyer_phone" readonly
-                                                                value="{{ $data['buyer_info']->phone }}"
+                                                                value="{{ $data->phone }}"
                                                                 class="form-control text-dark"
                                                                 placeholder="شماره تماس خریدار">
                                                         </div>
@@ -275,13 +277,28 @@
                                                                 </option>
                                                                 <option @selected($item->reoperty_type == 'maskoni') value="maskoni">مسکونی
                                                                 </option>
-                                                                <option @selected($item->reoperty_type == 'earth_maskoni') value="earth_maskoni">زمین مسکونی
+                                                                <option @selected($item->reoperty_type == 'earth_maskoni')
+                                                                    value="earth_maskoni">زمین مسکونی
                                                                 </option>
-                                                                <option @selected($item->reoperty_type == 'earth_tejari') value="earth_tejari">زمین تجاری
+                                                                <option @selected($item->reoperty_type == 'earth_tejari') value="earth_tejari">
+                                                                    زمین تجاری
                                                                 </option>
                                                             </select>
                                                         </div>
+
+
                                                         <div class="form-group mb-4">
+                                                            <label class="label">نوع درخواست *</label>
+                                                            <select class="form-select form-control text-dark request-type"
+                                                                name="request_type" id=""
+                                                                aria-label="Default select example">
+                                                                <option @selected($item->request_type == 'buy') value="buy">خرید
+                                                                </option>
+                                                                <option @selected($item->request_type == 'ejareh') value="ejareh">اجاره
+                                                                </option>
+                                                            </select>
+                                                        </div>
+                                                        {{-- <div class="form-group mb-4">
                                                             <label class="label">نوع درخواست *</label>
                                                             <div class="form-control">
                                                                 <div class="form-check form-check-inline">
@@ -301,28 +318,34 @@
                                                                         for="ejareh">اجاره</label>
                                                                 </div>
                                                             </div>
-                                                        </div>
-                                                        <div class="form-group mb-4">
-                                                            <label class="label">قیمت *</label>
-                                                            <input type="text"
-                                                                value="{{ number_format($item->price) }}" name="price"
-                                                                required class="form-control text-dark"
-                                                                onkeyup="separate(this);" placeholder="5,000,000">
-                                                        </div>
-                                                        <div class="form-group mb-4">
-                                                            <label class="label">مبلغ ماهیانه </label>
-                                                            <input type="text"
-                                                                value="{{ number_format($item->monthly_amount) }}"
-                                                                name="monthly_amount" class="form-control text-dark"
-                                                                onkeyup="separate(this);" placeholder="5,000,000">
-                                                        </div>
-                                                        <div class="form-group mb-4">
-                                                            <label class="label">پول پیش </label>
-                                                            <input type="text"
-                                                                value="{{ number_format($item->down_payment) }}"
-                                                                name="down_payment" class="form-control text-dark"
-                                                                onkeyup="separate(this);" placeholder="5,000,000">
-                                                        </div>
+                                                        </div> --}}
+                                                        {{-- @if ($item->request_type != 'ejareh') --}}
+                                                            <div class="form-group mb-4 request-price {{$item->request_type == 'ejareh' ? 'content-visibility' : ''}} ">
+                                                                <label class="label">قیمت *</label>
+                                                                <input type="text"
+                                                                    value="{{ number_format($item->price) }}"
+                                                                    name="price" required class="form-control text-dark"
+                                                                    onkeyup="separate(this);" placeholder="5,000,000">
+                                                            </div>
+                                                        {{-- @else --}}
+                                                            <div class="{{ $item->request_type != 'ejareh' ? 'content-visibility' : '' }} rent-data">
+                                                                <div class="form-group mb-4">
+                                                                    <label class="label">مبلغ ماهیانه </label>
+                                                                    <input type="text"
+                                                                        value="{{ number_format($item->monthly_amount) }}"
+                                                                        name="monthly_amount"
+                                                                        class="form-control text-dark"
+                                                                        onkeyup="separate(this);" placeholder="5,000,000">
+                                                                </div>
+                                                                <div class="form-group mb-4">
+                                                                    <label class="label">پول پیش </label>
+                                                                    <input type="text"
+                                                                        value="{{ number_format($item->down_payment) }}"
+                                                                        name="down_payment" class="form-control text-dark"
+                                                                        onkeyup="separate(this);" placeholder="5,000,000">
+                                                                </div>
+                                                            </div>
+                                                        {{-- @endif --}}
                                                         <div class="form-group mb-4">
                                                             <label class="label">تعداد خواب *</label>
                                                             <input type="number" value="{{ $item->bedrooms }}"
@@ -368,14 +391,16 @@
                                                     کنید؟
                                                 </div>
                                                 <div class="modal-footer">
-                                                    <form method="POST" action="{{ route('buyer_request_delete') }}">
+                                                    <form method="POST"
+                                                        action="{{ route('buyer_request_delete', $item->id) }}">
                                                         @csrf
+                                                        @method('DELETE')
                                                         <input type="hidden" name="request_id"
                                                             value="{{ $item->id }}">
                                                         <input type="hidden" name="buyer_id"
-                                                            value="{{ $data['buyer_info']->id }}">
+                                                            value="{{ $data->id }}">
                                                         <input type="hidden" name="buyer_name"
-                                                            value="{{ $data['buyer_info']->name }}">
+                                                            value="{{ $data->name }}">
 
                                                         <button type="button" class="btn btn-secondary text-white"
                                                             data-bs-dismiss="modal">خیر</button>
@@ -397,7 +422,7 @@
                 @endif
             </div>
             <div class="mt-3">
-                {{ $data['buyer_requests']->links() }}
+                {{-- {{ $data->buyer_requests->links() }} --}}
             </div>
         </div>
     </div>
@@ -416,15 +441,15 @@
         <div class="offcanvas-body p-4">
             <form action="{{ route('buyer_request_store') }}" method="POST">
                 @csrf
-                <input type="hidden" name="buyer_id" value="{{ $data['buyer_info']->id }}">
+                <input type="hidden" name="buyer_id" value="{{ $data->id }}">
                 <div class="form-group mb-4">
                     <label class="label">نام خریدار *</label>
-                    <input type="text" name="buyer_name" readonly value="{{ $data['buyer_info']->name }}"
+                    <input type="text" name="buyer_name" readonly value="{{ $data->name }}"
                         class="form-control text-dark" placeholder="نام خریدار">
                 </div>
                 <div class="form-group mb-4">
                     <label class="label">شماره تماس خریدار *</label>
-                    <input type="text" name="buyer_phone" readonly value="{{ $data['buyer_info']->phone }}"
+                    <input type="text" name="buyer_phone" readonly value="{{ $data->phone }}"
                         class="form-control text-dark" placeholder="شماره تماس خریدار">
                 </div>
                 <div class="form-group mb-4">
@@ -437,37 +462,32 @@
                         <option value="earth_tejari">زمین تجاری</option>
                     </select>
                 </div>
+
                 <div class="form-group mb-4">
                     <label class="label">نوع درخواست *</label>
-                    <div class="form-control">
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" id="buy" name="request_type"
-                                value="buy">
-                            <label class="form-check-label" for="buy">خرید</label>
-                        </div>
-                        <div class="form-check form-check-inline">
-                            <input class="form-check-input" type="radio" id="ejareh" name="request_type"
-                                value="ejareh">
-                            <label class="form-check-label" for="ejareh">اجاره</label>
-                        </div>
-                    </div>
+                    <select class="form-select form-control text-dark request-type" name="request_type" id=""
+                        aria-label="Default select example">
+                        <option selected value="buy">خرید</option>
+                        <option value="ejareh">اجاره</option>
+                    </select>
                 </div>
-                <div class="form-group mb-4">
+                <div class="form-group mb-4 request-price disabled">
                     <label class="label">قیمت *</label>
-                    <input type="text" name="price" required class="form-control text-dark"
-                        onkeyup="separate(this);" placeholder="5,000,000">
+                    <input type="text" name="price" class="form-control text-dark" onkeyup="separate(this);"
+                        placeholder="5,000,000">
                 </div>
-                <div class="form-group mb-4">
-                    <label class="label">مبلغ ماهیانه </label>
-                    <input type="text"
-                        name="monthly_amount" class="form-control text-dark"
-                        onkeyup="separate(this);" placeholder="5,000,000">
-                </div>
-                <div class="form-group mb-4">
-                    <label class="label">پول پیش </label>
-                    <input type="text"
-                        name="down_payment" class="form-control text-dark"
-                        onkeyup="separate(this);" placeholder="5,000,000">
+                <div class="content-visibility rent-data" id="">
+
+                    <div class="form-group mb-4">
+                        <label class="label">مبلغ ماهیانه </label>
+                        <input type="text" name="monthly_amount" class="form-control text-dark"
+                            onkeyup="separate(this);" placeholder="5,000,000">
+                    </div>
+                    <div class="form-group mb-4">
+                        <label class="label">پول پیش </label>
+                        <input type="text" name="down_payment" class="form-control text-dark"
+                            onkeyup="separate(this);" placeholder="5,000,000">
+                    </div>
                 </div>
                 <div class="form-group mb-4">
                     <label class="label">تعداد خواب *</label>

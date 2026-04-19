@@ -139,7 +139,7 @@
                                 <th scope="col">عملیات</th>
                             </tr>
                         </thead>
-                        @if (sizeof($offer_sell_buildings) > 0)
+                        @if ($offer_sell_buildings)
                             <tbody>
                                 @foreach ($offer_sell_buildings as $item)
                                     <tr class="text-center">
@@ -410,7 +410,7 @@
                     </table>
                 </div>
                 <div class="mt-3">
-                    {{ $offer_sell_buildings->links() }}
+                    {{ $offer_sell_buildings!=null?$offer_sell_buildings->links():'' }}
                 </div>
             </div>
         </div>

@@ -13,12 +13,12 @@ return new class extends Migration
     {
         Schema::create('building_buyers', function (Blueprint $table) {
             $table->id();
-            $table->unsignedBigInteger('buyer_id');
-            $table->foreign('buyer_id')->references('id')->on('buyers');
+            $table->foreignId('buyer_id')->constrained('buyers');
+            // $table->foreign('buyer_id')->references('id')->on('buyers');
             $table->string('buyer_name');
             $table->string('buyer_phone');
-            $table->unsignedBigInteger('request_seller_id');
-            $table->foreign('request_seller_id')->references('id')->on('request_sellers');
+            $table->foreginId('request_seller_id')->constrained('request_sellers');
+            // $table->foreign('request_seller_id')->references('id')->on('request_sellers');
             $table->string('created_at',60);
             $table->string('updated_at',60);
         });

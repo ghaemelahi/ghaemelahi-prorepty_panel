@@ -5,10 +5,17 @@ declare(strict_types=1);
 namespace App\Http\Controllers\panel;
 
 use App\Http\Controllers\Controller;
+use App\Http\Resources\BuyerResource;
 use Illuminate\Support\Facades\DB;
 use App\Http\Helpers\LogService;
-use App\Http\Requests\Buyers\RequestBuyers\ListBuyerRequest;
+use App\Http\Requests\Buyers\BuyerRequests\BuyerRequestDeleteeRequest;
+use App\Http\Requests\Buyers\BuyerRequests\BuyerRequestIndexRequest;
+use App\Http\Requests\Buyers\BuyerRequests\BuyerRequestStoreRequest;
+use App\Http\Requests\Buyers\BuyerRequests\BuyerRequestUpdateeRequest;
+use App\Http\Requests\Buyers\BuyerRequests\ListBuyerRequest;
+use App\Http\Requests\Buyers\BuyerRequests\RentListRequest;
 use App\Models\Buyer;
+use App\Models\BuyerRequest;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Validator;
 use Morilog\Jalali\Jalalian;
@@ -35,7 +42,8 @@ class BuyerRequestController extends Controller
 
         $data['buyer_requests'] = DB::table('buyers')
             ->join('buyer_requests', 'buyers.id', 'buyer_requests.buyer_id')
-            ->where('buyer_requests.is_deleted', 0);
+            ->where('buyer_requests.request_type', "buy")
+            ->whereNull('buyer_requests.deleted_at');
         if ($search_reoperty_type != null) {
             $data['buyer_requests'] = $data['buyer_requests']->where('buyer_requests.reoperty_type', $search_reoperty_type);
         }
@@ -64,31 +72,35 @@ class BuyerRequestController extends Controller
             return $item;
         })->appends($request->query());
         // dd($data['buyer_requests']);
-        return view('pages.buyers.buyer_request.list_buyers', compact('data', 'search_reoperty_type', 'search_request_type', 'search_price', 'search_bedrooms','search_info_buyer'));
+        return view('pages.buyers.buyer_request.list_buyers', compact('data', 'search_reoperty_type', 'search_request_type', 'search_price', 'search_bedrooms', 'search_info_buyer'));
     }
-    public function index(Request $request, $buyer_id)
+    public function index(BuyerRequestIndexRequest $request, Buyer $buyer)
     {
         // dd($request->all());
-        $data = $request->all();
-        $data['buyer_id'] = $buyer_id;
-
-        $validate = Validator::make($data, [
-            'buyer_id' => 'required|exists:buyers,id',
-            'search_reoperty_type' => 'nullable',
-            'search_request_type' => 'nullable|in:buy,ejareh',
-            'search_price' => 'nullable',
-            'search_bedrooms' => 'nullable',
-        ]);
-        if ($validate->fails()) {
-            return redirect()->back()->withErrors($validate, 'error_not_found_buyer');
-        }
+        // $buyer_id = 9;
+        // $data = $request->all();
+        // $data['buyer_id'] = $buyer_id;
 
         $search_reoperty_type = $request->search_reoperty_type;
         $search_request_type = $request->search_request_type;
         $search_price = $request->search_price != null ? str_replace(',', '', $request->search_price) : null;
         $search_bedrooms = $request->search_bedrooms;
+        // dd($buyer);
 
-        $data['buyer_info'] = DB::table('buyers')->whereId($buyer_id)->first();
+        // $data = $buyer->buyer_requests()->get();
+        $data = $buyer->load([
+            'buyer_requests' => function ($query) use ($search_reoperty_type, $search_request_type, $search_price, $search_bedrooms) {
+
+                $query->searchReopertyType($search_reoperty_type)
+                    ->searchRequestType($search_request_type)
+                    ->searchPrice($search_price)
+                    ->searchBedrooms($search_bedrooms);
+            }
+        ]);
+        // return new BuyerResource($buyer);
+
+        // dd($data);
+        /*   $data['buyer_info'] = DB::table('buyers')->whereId($buyer_id)->first();
         $data['buyer_requests'] = DB::table('buyer_requests')->where('is_deleted', 0)->where('buyer_id', $buyer_id);
         if ($search_reoperty_type != null) {
             $data['buyer_requests'] = $data['buyer_requests']->where('reoperty_type', $search_reoperty_type);
@@ -102,9 +114,57 @@ class BuyerRequestController extends Controller
         if ($search_bedrooms != null) {
             $data['buyer_requests'] = $data['buyer_requests']->where('bedrooms', $search_bedrooms);
         }
-        $data['buyer_requests'] = $data['buyer_requests']->paginate(50)->appends($request->query());
+        $data['buyer_requests'] = $data['buyer_requests']->paginate(50)->appends($request->query());*/
+
+        // dd($data);
 
         return view("pages.buyers.buyer_request.list", compact('data', 'search_reoperty_type', 'search_request_type', 'search_price', 'search_bedrooms'));
+    }
+
+    public function rent_list_buyers(RentListRequest $request)
+    {
+        $search_reoperty_type = $request->search_reoperty_type;
+        $search_request_type = $request->search_request_type;
+        $search_monthly_amount = $request->search_monthly_amount != null ? str_replace(',', '', $request->search_monthly_amount) : null;
+        $search_down_payment = $request->search_down_payment != null ? str_replace(',', '', $request->search_down_payment) : null;
+        $search_bedrooms = $request->search_bedrooms;
+        $search_info_buyer = $request->search_info_buyer;
+
+
+        $data = Buyer::query()
+            ->searchInformation($search_info_buyer)
+            ->join('buyer_requests', 'buyers.id', 'buyer_requests.buyer_id')
+            ->whereRequest_type('ejareh')
+            ->select(
+                'buyers.id',
+                'buyers.name',
+                'buyers.phone',
+                'buyer_requests.monthly_amount',
+                'buyer_requests.down_payment',
+                'buyer_requests.id as buyer_request_id',
+                'buyer_requests.bedrooms',
+                'buyer_requests.reoperty_type'
+            );
+            if($search_reoperty_type){
+                $data = $data->whereReoperty_type($search_reoperty_type);
+            }
+            if(!is_null($search_monthly_amount)){
+                $data = $data->whereMonthly_amount($search_monthly_amount);
+            }
+            if(!is_null($search_down_payment)){
+                $data = $data->whereDown_payment($search_down_payment);
+            }
+           $data = $data->paginate(50)->through(function ($item) {
+                $item->persian_reoperty_type = match ($item->reoperty_type) {
+                    'tejari' => 'تجاری',
+                    'maskoni' => 'مسکونی',
+                    'earth_maskoni' => 'زمین مسکونی',
+                    'earth_tejari' => 'زمین تجاری',
+                };
+                return $item;
+            })->appends($request->query());
+        // dd($data);
+        return view('pages.buyers.buyer_request.rent_list', compact('data', 'search_reoperty_type', 'search_request_type', 'search_down_payment', 'search_monthly_amount', 'search_bedrooms', 'search_info_buyer'));
     }
 
     public function proposal_building_list(Request $request, $buyer_id)
@@ -127,7 +187,7 @@ class BuyerRequestController extends Controller
         foreach ($data['buyer_requests'] as $item) {
             $offer_sell_buildings = DB::table('request_sellers')
                 ->join('sellers', 'request_sellers.seller_id', 'sellers.id')
-                ->join('images_requests_seller', 'request_sellers.id', 'images_requests_seller.request_seller_id')
+                ->leftjoin('images_requests_seller', 'request_sellers.id', 'images_requests_seller.request_seller_id')
                 ->leftJoin('building_buyers', 'request_sellers.id', 'building_buyers.request_seller_id')
                 ->select([
                     'request_sellers.*',
@@ -158,40 +218,31 @@ class BuyerRequestController extends Controller
         ]);
     }
 
-    public function store(Request $request)
+    public function store(BuyerRequestStoreRequest $request)
     {
-        // dd($request->all());
-        $validate = Validator::make($request->all(), [
-            'buyer_id' => 'required|exists:buyers,id',
-            'buyer_phone' => 'required|exists:buyers,phone',
-            'buyer_name' => 'required',
-            'reoperty_type' => 'required|in:tejari,maskoni,earth_maskoni,earth_tejari',
-            'request_type' => 'required|in:buy,ejareh',
-            'price' => 'required',
-            'down_payment' => 'nullable',
-            'monthly_amount' => 'nullable',
-            'bedrooms' => 'required',
-            'description' => 'nullable|string',
-        ]);
-
-        if ($validate->fails()) {
-            return redirect()->back()->withErrors($validate, 'error_create_buyer_request');
-        }
+        $data = $request->all();
+        $data['price'] = $request->price != 0 ? str_replace(",", "", $request->price) : 0;
+        $data['down_payment'] = $request->down_payment != 0 ? str_replace(",", "", $request->down_payment) : 0;
+        $data['monthly_amount'] = $request->monthly_amount != 0 ? str_replace(",", "", $request->monthly_amount) : 0;
+        $data['bedrooms'] = english_number($request->bedrooms);
 
         $request->description = $request->description ?? "_";
+        $data['created_at'] = Jalalian::now()->format("Y-m-d H:i:s");
+        $data['updated_at'] = Jalalian::now()->format("Y-m-d H:i:s");
 
-        DB::table('buyer_requests')->insert([
-            'buyer_id' => $request->buyer_id,
-            'reoperty_type' => $request->reoperty_type,
-            'price' => str_replace(",", "", $request->price),
-            'down_payment' => str_replace(",", "", $request->down_payment),
-            'monthly_amount' => str_replace(",", "", $request->monthly_amount),
-            'request_type' => $request->request_type,
-            'bedrooms' => english_number($request->bedrooms),
-            'description' => $request->description ?? "_",
-            'created_at' => Jalalian::now()->format("Y-m-d H:i:s"),
-            'updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
-        ]);
+        BuyerRequest::query()->create($data);
+        // DB::table('buyer_requests')->insert([
+        //     'buyer_id' => $request->buyer_id,
+        //     'reoperty_type' => $request->reoperty_type,
+        //     'price' => $request->price != 0 ? str_replace(",", "", $request->price) : 0,
+        //     'down_payment' => $request->down_payment != 0 ? str_replace(",", "", $request->down_payment) : 0,
+        //     'monthly_amount' => $request->monthly_amount != 0 ? str_replace(",", "", $request->monthly_amount) : 0,
+        //     'request_type' => $request->request_type,
+        //     'bedrooms' => english_number($request->bedrooms),
+        //     'description' => $request->description ?? "_",
+        //     'created_at' => Jalalian::now()->format("Y-m-d H:i:s"),
+        //     'updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
+        // ]);
 
         // MARK:-> SAVE LOG USER SYSTEM
         $report = "create_buyer_request";
@@ -201,31 +252,24 @@ class BuyerRequestController extends Controller
         return redirect()->route('buyer_requests', $request->buyer_id)->with('success_create_buyer_request', "درخواست ثبت گردید.");
     }
 
-    public function update(Request $request)
+    public function update(BuyerRequestUpdateeRequest $request, BuyerRequest $buyerRequest)
     {
-        // dd($request->all());
-        $validate = Validator::make($request->all(), [
-            'request_id' => 'required|exists:buyer_requests,id',
-            'buyer_id' => 'required|exists:buyers,id',
-            'buyer_phone' => 'required|exists:buyers,phone',
-            'buyer_name' => 'required',
-            'reoperty_type' => 'required|in:tejari,maskoni,earth_maskoni,earth_tejari',
-            'status' => 'required|in:doing,compelet',
-            'request_type' => 'required|in:buy,ejareh',
-            'price' => 'required',
-            'down_payment' => 'nullable',
-            'monthly_amount' => 'nullable',
-            'bedrooms' => 'required',
-            'description' => 'nullable|string',
-        ]);
-
-        if ($validate->fails()) {
-            return redirect()->back()->withErrors($validate, 'error_update_buyer_request');
-        }
+        $data = $request->all();
+        $data['price'] = $request->price != 0 ? str_replace(",", "", $request->price) : $buyerRequest->price;
+        $data['down_payment'] = $request->down_payment != 0 ? str_replace(",", "", $request->down_payment) : $buyerRequest->monthly_amount;
+        $data['monthly_amount'] = $request->monthly_amount != 0 ? str_replace(",", "", $request->monthly_amount) : $buyerRequest->down_payment;
+        $data['bedrooms'] = english_number($request->bedrooms);
+        // $data["down_payment"] = $request->down_payment ??$buyerRequest->down_payment;
+        // $data["monthly_amount"] = $request->monthly_amount ?? $buyerRequest->monthly_amount;
+        // $data["price"] = $request->price ?? $buyerRequest->price;
 
         $request->description = $request->description ?? "_";
+        $data['updated_at'] = Jalalian::now()->format("Y-m-d H:i:s");
+        $buyerRequest->update($data);
 
-        DB::table('buyer_requests')->whereId($request->request_id)->update([
+        // $request->description = $request->description ?? "_";
+
+       /* DB::table('buyer_requests')->whereId($request->request_id)->update([
             'buyer_id' => $request->buyer_id,
             'reoperty_type' => $request->reoperty_type,
             'price' => str_replace(",", "", $request->price),
@@ -236,7 +280,7 @@ class BuyerRequestController extends Controller
             'status' => $request->status,
             'description' => $request->description ?? "_",
             'updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
-        ]);
+        ]);*/
 
         // MARK:-> SAVE LOG USER SYSTEM
         $report = "update_buyer_request";
@@ -246,23 +290,15 @@ class BuyerRequestController extends Controller
         return redirect()->route('buyer_requests', $request->buyer_id)->with('success_update_buyer_request', "درخواست بروزرسانی گردید.");
     }
 
-    public function delete(Request $request)
+    public function delete(BuyerRequestDeleteeRequest $request,BuyerRequest $buyerRequest)
     {
-        $validate = Validator::make($request->all(), [
-            'request_id' => 'required|exists:buyer_requests,id',
-            'buyer_id' => 'required|exists:buyers,id',
-        ]);
 
-        if ($validate->fails()) {
-            return redirect()->back()->withErrors($validate, 'error_delete_buyer_request');
-        }
-
-
-        DB::table('buyer_requests')->whereId($request->request_id)->update([
+        $buyerRequest->delete();
+       /* DB::table('buyer_requests')->whereId($request->request_id)->update([
             'is_deleted' => 1,
             'updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
             'delete_at' => Jalalian::now()->format("Y-m-d H:i:s"),
-        ]);
+        ]);*/
 
         // MARK:-> SAVE LOG USER SYSTEM
         $report = "delete_buyer_request";
@@ -270,13 +306,8 @@ class BuyerRequestController extends Controller
         $this->logService->saveLog($report, $description);
         // MARK:-> END SAVE LOG USER SYSTEM
         return redirect()->route('buyer_requests', $request->buyer_id)->with('success_delete_buyer_request', "درخواست حذف گردید.");
+        // return redirect()->route('buyer_requests', $request->buyer_id)->with('success_delete_buyer_request', "درخواست حذف گردید.");
     }
-
-
-
-
-
-
 
 
 
@@ -295,12 +326,12 @@ class BuyerRequestController extends Controller
                 'buyer_requests.id',
                 'buyer_requests.request_type',
                 'buyer_requests.reoperty_type',
-                'buyer_requests.delete_at',
+                'buyer_requests.deleted_at',
                 'buyers.id as buyer_id',
                 'buyers.name',
                 'buyers.phone',
             ])
-            ->where('buyer_requests.is_deleted', 1)->paginate(50)->through(function ($item) {
+            ->whereNotNull('buyer_requests.deleted_at')->paginate(50)->through(function ($item) {
                 $item->request_type = match ($item->request_type) {
                     'buy' => 'خرید',
                     'ejareh' => 'اجاره',
@@ -312,29 +343,36 @@ class BuyerRequestController extends Controller
                     'earth_maskoni' => 'زمین مسکونی',
                     'earth_tejari' => 'زمین تجاری',
                 };
+
+                $item->deleted_at = Jalalian::fromDateTime($item->deleted_at)->format("H:i:s Y/m/d");
                 return $item;
             })->appends($request->query());
 
         return view("pages.buyers.buyer_request.delete_list", compact('data'));
     }
 
-    public function undelete(Request $request)
+    public function undelete(BuyerRequestDeleteeRequest $request)
     {
-        $validate = Validator::make($request->all(), [
-            'request_id' => 'required|exists:buyer_requests,id',
-            'buyer_id' => 'required|exists:buyers,id',
-        ]);
 
-        if ($validate->fails()) {
-            return redirect()->back()->withErrors($validate, 'error_undelete_buyer_request');
-        }
+        
+        $buyerRequest = BuyerRequest::query()->onlyTrashed()->findOrFail($request->request_id);
+        $buyerRequest->restore();
+        $buyerRequest->buyer_requests()->restore();
+        // $validate = Validator::make($request->all(), [
+        //     'request_id' => 'required|exists:buyer_requests,id',
+        //     'buyer_id' => 'required|exists:buyers,id',
+        // ]);
+
+        // if ($validate->fails()) {
+        //     return redirect()->back()->withErrors($validate, 'error_undelete_buyer_request');
+        // }
 
 
-        DB::table('buyer_requests')->whereId($request->request_id)->update([
+       /* DB::table('buyer_requests')->whereId($request->request_id)->update([
             'is_deleted' => 0,
             'updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
             'delete_at' => null,
-        ]);
+        ]);*/
 
         // MARK:-> SAVE LOG USER SYSTEM
         $report = "undelete_buyer_request";

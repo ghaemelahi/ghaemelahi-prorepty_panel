@@ -1,10 +1,10 @@
 <?php
 
-namespace App\Http\Requests\Buyers\RequestBuyers;
+namespace App\Http\Requests\sell\RequestSell;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class ListBuyerRequest extends FormRequest
+class SellerDeleteRequest extends FormRequest
 {
     /**
      * Determine if the user is authorized to make this request.
@@ -22,10 +22,8 @@ class ListBuyerRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'search_reoperty_type' => 'nullable',
-            'search_request_type' => 'nullable|in:buy,ejareh',
-            'search_price' => 'nullable',
-            'search_bedrooms' => 'nullable',
+            'seller_id' => 'required|exists:sellers,id',
+            'name' => 'required|string|max:255',
         ];
     }
 }

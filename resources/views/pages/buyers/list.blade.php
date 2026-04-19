@@ -222,8 +222,9 @@
                                                         </div>
                                                         <div class="modal-body text-start">
                                                             <!-- فرم ویرایش اطلاعات (نمونه، قابلیت افزودن اکشن و مقادیر بیشتر دارد) -->
-                                                            <form method="POST" action="{{ route('buyer_update') }}">
+                                                            <form method="POST" action="{{ route('buyer_update',$item->id) }}">
                                                                 @csrf
+                                                                @method('PUT')
                                                                 <input type="hidden" name="buyer_id"
                                                                     value="{{ $item->id }}">
                                                                 <div class="mb-3">
@@ -285,8 +286,9 @@
                                                             کنید؟
                                                         </div>
                                                         <div class="modal-footer">
-                                                            <form method="POST" action="{{ route('buyer_delete') }}">
+                                                            <form method="POST" action="{{ route('buyer_delete',$item->id) }}">
                                                                 @csrf
+                                                                @method('DELETE')
                                                                 <input type="hidden" name="buyer_id"
                                                                     value="{{ $item->id }}">
                                                                 <input type="hidden" name="name"

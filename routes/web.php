@@ -32,7 +32,7 @@ Route::middleware(['auth','check_active'])->group(function () {
         Route::get('/', [UserController::class, 'index'])->name('user_system');
         Route::post('/store', [UserController::class, 'store'])->name('user_system_store');
         Route::post('/update', [UserController::class, 'update'])->name('user_system_update');
-        Route::post('/delete', [UserController::class, 'delete'])->name('user_system_delete');
+        Route::delete('/delete/{user}', [UserController::class, 'delete'])->name('user_system_delete');
         Route::get('/user_report/{user_id}', [UserController::class, 'user_report'])->name('user_system_report');
     });
 
@@ -40,19 +40,20 @@ Route::middleware(['auth','check_active'])->group(function () {
     Route::prefix('buyer')->group(function () {
         Route::get('/', [BuyerController::class, 'index'])->name('buyers');
         Route::post('/store', [BuyerController::class, 'store'])->name('buyer_store');
-        Route::post('/update', [BuyerController::class, 'update'])->name('buyer_update');
-        Route::post('/delete', [BuyerController::class, 'delete'])->name('buyer_delete');
+        Route::put('/update/{buyer}', [BuyerController::class, 'update'])->name('buyer_update');
+        Route::delete('/delete/{buyer}', [BuyerController::class, 'delete'])->name('buyer_delete');
         Route::post('/undelete', [BuyerController::class, 'undelete'])->name('buyer_undelete');
     });
 
     // Buyer Requests System
     Route::prefix('buyer_request')->group(function () {
         Route::get('/list_buyers', [BuyerRequestController::class, 'list_buyers'])->name('list_buyers_requests');
-        Route::get('/{buyer_id}', [BuyerRequestController::class, 'index'])->name('buyer_requests');
+        Route::get('/rent_list', [BuyerRequestController::class, 'rent_list_buyers'])->name('rent_list_requests');
+        Route::get('/{buyer}', [BuyerRequestController::class, 'index'])->name('buyer_requests');
         Route::get('proposal_building_list/{buyer_id}', [BuyerRequestController::class, 'proposal_building_list'])->name('proposal_building_list');
         Route::post('/store', [BuyerRequestController::class, 'store'])->name('buyer_request_store');
-        Route::post('/update', [BuyerRequestController::class, 'update'])->name('buyer_request_update');
-        Route::post('/delete', [BuyerRequestController::class, 'delete'])->name('buyer_request_delete');
+        Route::put('/update/{buyerRequest}', [BuyerRequestController::class, 'update'])->name('buyer_request_update');
+        Route::delete('/delete/{buyerRequest}', [BuyerRequestController::class, 'delete'])->name('buyer_request_delete');
         Route::post('/undelete', [BuyerRequestController::class, 'undelete'])->name('buyer_request_undelete');
     });
 
@@ -60,14 +61,15 @@ Route::middleware(['auth','check_active'])->group(function () {
     Route::prefix('seller')->group(function () {
         Route::get('/', [SellerController::class, 'index'])->name('sellers');
         Route::post('/store', [SellerController::class, 'store'])->name('seller_store');
-        Route::post('/update', [SellerController::class, 'update'])->name('seller_update');
-        Route::post('/delete', [SellerController::class, 'delete'])->name('seller_delete');
+        Route::put('/update/{seller}', [SellerController::class, 'update'])->name('seller_update');
+        Route::delete('/delete/{seller}', [SellerController::class, 'delete'])->name('seller_delete');
         Route::post('/undelete', [SellerController::class, 'undelete'])->name('seller_undelete');
     });
 
     // seller Requests System
     Route::prefix('seller_request')->group(function () {
         Route::get('/list_sells', [RequestSellerController::class, 'list_sells'])->name('list_sells_requests');
+        Route::get('/rent_list_sells', [RequestSellerController::class, 'rent_list_sells'])->name('rent_list_sells_requests');
         Route::get('/{seller_id}', [RequestSellerController::class, 'index'])->name('seller_requests');
         Route::post('/store', [RequestSellerController::class, 'store'])->name('seller_request_store');
         Route::post('/update', [RequestSellerController::class, 'update'])->name('seller_request_update');

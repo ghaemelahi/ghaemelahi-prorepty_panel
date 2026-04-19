@@ -35,7 +35,7 @@
                                         </td>
                                         <td class="fw-semibold">{{ $item->request_type }}</td>
                                         <td class="fw-semibold">{{ $item->reoperty_type }}</td>
-                                        <td>{{ $item->delete_at }}</td>
+                                        <td>{{ $item->deleted_at }}</td>
                                         <td>
                                             <form action="{{ route('buyer_request_undelete') }}" method="post">
                                                 @csrf

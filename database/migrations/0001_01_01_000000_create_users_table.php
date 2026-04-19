@@ -24,7 +24,7 @@ return new class extends Migration
             $table->tinyInteger('is_deleted')->default(0);
             $table->string('p_created_at',60);
             $table->string('p_updated_at',60);
-            $table->string('deleted_at',60)->nullable();
+            $table->softDeletes();
         });
 
         Schema::create('password_reset_tokens', function (Blueprint $table) {

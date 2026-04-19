@@ -81,7 +81,7 @@
 
         </div>
     </div>
-    
+
     <script src="{{ asset('assets/js/bootstrap.bundle.min.js') }}"></script>
     <script src="{{ asset('assets/js/sidebar-menu.js') }}"></script>
     <script src="{{ asset('assets/js/dragdrop.js') }}"></script>
@@ -95,8 +95,8 @@
     <script src="{{ asset('assets/js/simplebar.min.js') }}"></script>
     <script src="{{ asset('assets/js/apexcharts.min.js') }}"></script>
     <script src="{{ asset('assets/js/amcharts.js') }}"></script>
-    @if(!request()->routeIs('dashbord'))
-    <script src="{{ asset('assets/js/custom/ecommerce-chart.js') }}"></script>
+    @if (!request()->routeIs('dashbord'))
+        <script src="{{ asset('assets/js/custom/ecommerce-chart.js') }}"></script>
     @endif
     <script src="{{ asset('assets/js/custom/custom.js') }}"></script>
     <script src="{{ asset('assets/js/price.js') }}"></script>
@@ -104,7 +104,9 @@
         href="{{ asset('assets/JalaliDatePicker-main/dist/jalalidatepicker.min.css') }}" />
     <script type="text/javascript" src="{{ asset('assets/JalaliDatePicker-main/dist/jalalidatepicker.min.js') }}"></script>
 
-    <script>jalaliDatepicker.startWatch();</script>
+    <script>
+        jalaliDatepicker.startWatch();
+    </script>
 
     {{-- <script>
          $(document).ready(function() {
@@ -124,6 +126,21 @@
             });
         });
     </script>
+
+
+
+    <script>
+        $('.request-type').change(function() {
+            if ($(this).val() === 'ejareh') {
+                $('.rent-data').removeClass('content-visibility');
+                $('.request-price').addClass('content-visibility');
+            } else {
+                $('.rent-data').addClass('content-visibility');
+                $('.request-price').removeClass(['content-visibility']);
+            }
+        });
+    </script>
+
     @yield('scripts')
 </body>
 

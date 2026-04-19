@@ -25,10 +25,12 @@ class IndexController extends Controller
         $import_export_type = $request->import_export_type ?? 'monthly';
 
         $cadr_info = Tally::cadr_info();
-        
 
         $report_chart = Tally::report_chart($report_type);
+        // dd($report_chart);
+
         $report_import_export = Tally::report_import_export($import_export_type);
+        // dd($report_import_export);
 
         $report_total_revenue = Tally::report_total_revenue();
         

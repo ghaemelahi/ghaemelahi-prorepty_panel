@@ -7,6 +7,13 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use App\Http\Helpers\LogService;
+use App\Http\Requests\sell\RequestSell\SellerDeleteRequest;
+use App\Http\Requests\sell\RequestSell\SellerIndexRequest;
+use App\Http\Requests\sell\RequestSell\SellerStoreRequest;
+use App\Http\Requests\sell\RequestSell\SellerUnDeleteRequest as RequestSellSellerUnDeleteRequest;
+use App\Http\Requests\sell\RequestSell\SellerUpdateRequest;
+use App\Http\Requests\sellers\SellerUnDeleteRequest;
+use App\Models\Seller;
 use Morilog\Jalali\Jalalian;
 
 use function App\Http\Helpers\english_number;
@@ -19,56 +26,27 @@ class SellerController extends Controller
     {
         $this->logService = $logService;
     }
-    public function index(Request $request)  {
-
-        $validate = validator::make($request->all(), [
-            'search_name' => 'nullable|string|max:255',
-            'search_phone' => 'nullable|string|max:11',
-            'search_gender' => 'nullable|in:male,female',
-        ]);
-        if ($validate->fails()) {
-            return redirect()->back()->withErrors($validate, 'error_search_seller');
-        }
+    public function index(SellerIndexRequest $request)  {
         $search_name  = $request->search_name;
         $search_phone  = $request->search_phone;
         $search_gender  = $request->search_gender;
 
 
-        $sellers = DB::table('sellers')->where('is_deleted',0);
-        if(!empty($search_name)){
-            $sellers = $sellers->where('name','like',"%$search_name%");
-        }
-
-        if(!empty($search_phone)){
-            $sellers = $sellers->where('phone','like',"%$search_phone%");
-        }
-
-        if(!empty($search_gender)){
-            $sellers = $sellers->where('gender',"$search_gender");
-        }
-        $sellers = $sellers->paginate(50)->appends($request->query());
+        $sellers = Seller::query()
+        ->searchName($search_name)
+        ->searchPhone($search_phone)
+        ->searchGender($search_gender)
+        ->paginate(50)->appends($request->query());
         return view("pages.sellers.list",compact('sellers','search_name','search_phone','search_gender'));
     }
 
-    public function store(Request $request) {
+    public function store(SellerStoreRequest $request) {
 
-        $validate = Validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'phone' => 'required|unique:sellers',
-            'gender' => 'required|in:male,female',
-        ]);
-        if ($validate->fails()) {
-            return redirect()->back()->withErrors($validate, 'error_store_seller');
-        }
-
-        $phone = english_number($request->phone);
-       $seller_id = DB::table('sellers')->insertGetId([
-            'name'=>$request->name,
-            'phone'=>$phone,
-            'gender'=>$request->gender,
-            'created_at'=>Jalalian::now()->format("Y-m-d H:i:s"),
-            'updated_at'=>Jalalian::now()->format("Y-m-d H:i:s"),
-        ]);
+        $data = $request->all();
+        $data['phone'] = english_number($request->phone);
+        $data['created_at'] = Jalalian::now()->format("Y-m-d H:i:s");
+        $data['updated_at'] = Jalalian::now()->format("Y-m-d H:i:s");
+        $seller = Seller::query()->create($data);
 
         // MARK:-> SAVE LOG USER SYSTEM
         $report = "create_seller";
@@ -76,27 +54,15 @@ class SellerController extends Controller
         $description = "فروشنده $name به سیستم اضافه گردید.";
         $this->logService->saveLog($report, $description);
         // MARK:-> END SAVE LOG USER SYSTEM
-        return redirect()->route('seller_requests',$seller_id)->with('success_create_seller', "فروشنده $name با موفقیت ایجاد شد");
+        return redirect()->route('seller_requests',$seller->id)->with('success_create_seller', "فروشنده $name با موفقیت ایجاد شد");
     }
 
-    public function update(Request $request){
-        $validate = validator::make($request->all(), [
-            'seller_id' => 'required|exists:sellers,id',
-            'name' => 'required|string|max:255',
-            'phone' => 'required',
-            'gender' => 'required|in:male,female',
-        ]);
-        if ($validate->fails()) {
-            return redirect()->back()->withErrors($validate, 'error_update_seller');
-        }
+    public function update(SellerUpdateRequest $request, Seller $seller){
 
-        $phone = english_number($request->phone);
-        DB::table('sellers')->whereId($request->seller_id)->update([
-            'name'=>$request->name,
-            'phone'=>$phone,
-            'gender'=>$request->gender,
-            'updated_at'=>Jalalian::now()->format("Y-m-d H:i:s"),
-        ]);
+        $data = $request->all();
+        $data['phone'] = english_number($request->phone);
+        $data['updated_at'] = Jalalian::now()->format("Y-m-d H:i:s");
+        $seller->update($data);
 
         // MARK:-> SAVE LOG USER SYSTEM
         $report = "update_seller";
@@ -107,20 +73,10 @@ class SellerController extends Controller
         return redirect()->route('sellers')->with('success_update_seller', "اطلاعات فروشنده $name بروزرسانی گردید.");
     }
 
-    public function delete(Request $request) {
-        $validate = validator::make($request->all(), [
-            'seller_id' => 'required|exists:sellers,id',
-            'name' => 'required|string|max:255',
-        ]);
-        if ($validate->fails()) {
-            return redirect()->back()->withErrors($validate, 'error_delete_seller');
-        }
+    public function delete(SellerDeleteRequest $request,Seller $seller) {
 
-        DB::table('sellers')->whereId($request->seller_id)->update([
-            'is_deleted' => 1,
-            'updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
-            'delete_at' => Jalalian::now()->format("Y-m-d H:i:s"),
-        ]);
+        $seller->request_seller()->delete();
+        $seller->delete();
 
 
         // MARK:-> SAVE LOG USER SYSTEM
@@ -134,32 +90,15 @@ class SellerController extends Controller
 
     
     public function delete_list(Request $request)  {
-        $data = DB::table('sellers')->where('is_deleted',1)->paginate(50)->appends($request->query());
+        $data = Seller::query()->onlyTrashed()->paginate(50)->appends($request->query());
         return view("pages.sellers.delete_list",compact('data'));
     }
 
-    public function undelete(Request $request) {
-        
-        $validate = validator::make($request->all(), [
-            'seller_id' => 'required|exists:sellers,id',
-            'name' => 'required|string|max:255',
-        ]);
-        if ($validate->fails()) {
-            return redirect()->back()->withErrors($validate, 'error_undelete_seller');
-        }
-
-        DB::table('sellers')->whereId($request->seller_id)->update([
-            'is_deleted' => 0,
-            'updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
-            'delete_at' => null,
-        ]);
-
-        DB::table('request_sellers')->where('seller_id',$request->seller_id)->update([
-            'is_deleted' => 0,
-            'updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
-            'delete_at' => null,
-        ]);
-
+    public function undelete(RequestSellSellerUnDeleteRequest $request) {
+        $seller = Seller::query()->onlyTrashed()->findOrFail($request->seller_id);
+        // dd($seller);
+        $seller->restore();
+        $seller->request_seller()->restore();
 
         // MARK:-> SAVE LOG USER SYSTEM
         $report = "undelete_seller";

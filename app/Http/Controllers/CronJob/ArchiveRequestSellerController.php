@@ -10,7 +10,7 @@ use Morilog\Jalali\Jalalian;
 class ArchiveRequestSellerController extends Controller
 {
     public function archive_request_sell() {
-        $today = Jalalian::now()->format("Y-m-d");
+        $today = Jalalian::now()->format("Y-m-d H:i:s");
         DB::table('request_sellers')->where('archive_date', $today)->update([
             'is_archive'=>1,
         ]);

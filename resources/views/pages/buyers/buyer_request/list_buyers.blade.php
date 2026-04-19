@@ -143,8 +143,8 @@
                                         </td> --}}
                                         <td>
                                             <span>
-                                                @if ($item->request_type == 'sell')
-                                                    فروش
+                                                @if ($item->request_type == 'buy')
+                                                    خرید
                                                 @elseif($item->request_type == 'ejareh')
                                                     اجاره
                                                 @endif
@@ -164,7 +164,7 @@
                                                     data-bs-target="#editUserModal{{ $item->id }}">
                                                     جزئیات
                                                 </button>
-                                                <a href="{{ route('buyer_requests', $item->id) }}"
+                                                <a href="{{ route('buyer_requests', $item->buyer_id) }}"
                                                     class="btn btn-info py-2 px-3 text-white fw-semibold rounded-3">
                                                     درخواست‌ها
                                                 </a>
@@ -245,10 +245,10 @@
                                                         <div class="form-control">
                                                             <div class="form-check form-check-inline">
                                                                 <input class="form-check-input" disabled
-                                                                    @checked($item->request_type == 'sell') type="checkbox"
-                                                                    id="sell" name="request_type" value="sell">
+                                                                    @checked($item->request_type == 'buy') type="checkbox"
+                                                                    id="buy" name="request_type" value="buy">
                                                                 <label class="form-check-label"
-                                                                    for="sell">فروش</label>
+                                                                    for="buy">خرید</label>
                                                             </div>
                                                             <div class="form-check form-check-inline">
                                                                 <input class="form-check-input"
@@ -294,7 +294,7 @@
                                                 <div class="modal-header">
                                                     <h5 class="modal-title"
                                                         id="buldingSellModalLabel{{ $item->id }}">
-                                                        فروش ملک
+                                                        خرید ملک
                                                     </h5>
                                                     <button type="button" class="btn-close" data-bs-dismiss="modal"
                                                         aria-label="بستن"></button>

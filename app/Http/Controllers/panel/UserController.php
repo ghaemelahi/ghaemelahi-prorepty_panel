@@ -10,6 +10,10 @@ use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Validator;
 use Illuminate\Support\Facades\Hash;
 use App\Http\Helpers\LogService;
+use App\Http\Requests\Users\UserDeleteRequest;
+use App\Http\Requests\Users\UserIndexRequest;
+use App\Http\Requests\Users\UserStoreRequest;
+use App\Http\Requests\Users\UserUpdateRequest;
 use Morilog\Jalali\Jalalian;
 use Spatie\Permission\Models\Role;
 
@@ -21,65 +25,39 @@ class UserController extends Controller
     {
         $this->logService = $logService;
     }
-    public function index(Request $request)
+    public function index(UserIndexRequest $request)
     {
-        $validate = Validator::make($request->all(), [
-            'search_name' => 'nullable|string',
-            'search_email' => 'nullable|string',
-            'search_roles' => 'nullable|array|in:admin,secretary',
-            'search_active' => 'nullable|string',
-        ]);
-        if ($validate->fails()) {
-            return redirect()->back()->withErrors($validate, "error_search_data");
-        }
         $search_name = $request->search_name;
         $search_email = $request->search_email;
         $search_roles = $request->input('search_roles', []);
-        $search_active = $request->search_active;
-
-
-        $system_users = DB::table('users');
-        if (!empty($search_name)) {
-            $system_users->where('name', "LIKE", "%$search_name%");
-        }
-
-        if (!empty($search_email)) {
-            $system_users->where('email', "LIKE", "%$search_email%");
-        }
-
-        if (!empty($search_roles)) {
-            $system_users->whereIn('system_roles', $search_roles);
-        }
-        if ($search_active != null) {
-            $system_users->where('active', $search_active);
-        }
-        $system_users = $system_users->paginate(15)->appends($request->query());
+        $search_active = intval($request->search_active);
+        $system_users = User::query()
+        ->searchName($search_name)
+        ->searchEmaile($search_email)
+        ->searchRoles($search_roles)
+        ->searchActive($search_active)
+        ->paginate(15)
+        ->appends($request->query());
 
         return view('pages.user_system.list', compact('system_users', 'search_name', 'search_email', 'search_roles', 'search_active'));
     }
 
-    public function store(Request $request)
+    public function store(UserStoreRequest $request)
     {
-        $validate = validator::make($request->all(), [
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|string|min:8',
-            'system_roles' => 'required|in:admin,secretary',
-        ]);
-        if ($validate->fails()) {
-            return redirect()->back()->withErrors($validate, 'error_store_user_system');
-        }
+        $data = $request->all();
 
-
-
-        $user = User::create([
-            'name'         => $request->name,
-            'email'        => $request->email,
-            'system_roles' => $request->system_roles,
-            'password'     => Hash::make($request->password),
-            'p_created_at' => Jalalian::now()->format("Y-m-d H:i:s"),
-            'p_updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
-        ]);
+        $data['p_created_at'] = Jalalian::now()->format("Y-m-d H:i:s");
+        $data['p_updated_at'] = Jalalian::now()->format("Y-m-d H:i:s");
+        $data['password'] = Hash::make($request->password);
+        $user = User::query()->create($data);
+        // $user = User::create([
+        //     'name'         => $request->name,
+        //     'email'        => $request->email,
+        //     'system_roles' => $request->system_roles,
+        //     'password'     => Hash::make($request->password),
+        //     'p_created_at' => Jalalian::now()->format("Y-m-d H:i:s"),
+        //     'p_updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
+        // ]);
 
         // اختصاص نقش
         $role = Role::findByName($request->system_roles);
@@ -94,23 +72,16 @@ class UserController extends Controller
         return redirect()->route('user_system')->with('success_create_user_system', 'کاربر با موفقیت ایجاد شد');
     }
 
-    public function update(Request $request)
+    public function update(UserUpdateRequest $request)
     {
-        $validate = validator::make($request->all(), [
-            'user_id' => 'required|exists:users,id',
-            'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:users',
-            'password' => 'required|string|min:8',
-            'system_roles' => 'required|in:admin,secretary',
-        ]);
-        if ($validate->fails()) {
-            return redirect()->back()->withErrors($validate, 'errors_update_user_system');
-        }
 
         $user = User::find($request->user_id);
 
-
-        User::whereId($request->user_id)->update([
+        $data = $request->all();
+        $data['password'] = $request->password ? Hash::make($request->password):$user->password;
+        $data['p_updated_at'] = Jalalian::now()->format("Y-m-d H:i:s");
+        $user->update($data);
+       /* $user->update([
             'name'         => $request->name,
             'email'        => $request->email,
             'system_roles' => $request->system_roles,
@@ -122,11 +93,11 @@ class UserController extends Controller
             User::whereId($request->user_id)->update([
                 'password'     => Hash::make($request->password),
             ]);
-        }
+        }*/
 
         // اختصاص نقش
         $user = User::find($request->user_id);
-        $role = Role::findByName($request->role);
+        $role = Role::findByName($request->system_roles);
         $user->roles()->detach();
         $user->assignRole($role);
 
@@ -139,22 +110,15 @@ class UserController extends Controller
         return redirect()->route('user_system')->with('success_update_user_system', "کاربر $request>name با موفقیت بروزرسانی شد");
     }
 
-    public function delete(Request $request)
+    public function delete(UserDeleteRequest $request, User $user)
     {
-        $validate = validator::make($request->all(), [
-            'user_id' => 'required|exists:users,id',
-            'name' => 'required|string|max:255',
-        ]);
-        if ($validate->fails()) {
-            return redirect()->back()->withErrors($validate, 'errors_delete_user_system');
-        }
 
-
-        User::whereId($request->user_id)->update([
+        $user->delete();
+        /*User::whereId($request->user_id)->update([
             'is_deleted' => 1,
             'p_updated_at' => Jalalian::now()->format("Y-m-d H:i:s"),
             'deleted_at' => Jalalian::now()->format("Y-m-d H:i:s"),
-        ]);
+        ]);*/
 
         //MAKE:-> LOG SERVICE
         $report = "delete_user_system";

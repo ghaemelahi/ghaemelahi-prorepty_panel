@@ -8,7 +8,7 @@ use Morilog\Jalali\Jalalian;
 class LogService
 {
 
-    public function saveLog(string $report, $description = null): void
+    public static function saveLog(string $report, $description = null): void
     {
         // تنظیم اطلاعات عمومی
         if (Auth::check()) {
